@@ -2,6 +2,21 @@
 
 ## Requirements
 
+The Coffeescript files in src should be able to compile into javascript using make (but somehow does not -- it will break the code.)
+An old version of jsPsych (circa 2015) is used, so you need to retool additional plugins to work with this version. If you want to use a newer plugin or coffeescript, please look at the other branches in this repo.
+
+
+To get started with running the flask app, create a psiturk virtual environment or conda environment and install psiturk:
+
+```
+pip install psiturk
+```
+
+## Origins
+
+Fred's Web of Cash plugin: https://github.com/fredcallaway/Mouselab-MDP
+RLDM paper: https://osf.io/7wcya/
+
 ## Setup
 
  Go through these two atlas pages:
