@@ -2,9 +2,12 @@
 
 ## Requirements
 
-The Coffeescript files in src should be able to compile into javascript using make (but somehow does not -- it will break the code.)
-An old version of jsPsych (circa 2015) is used, so you need to retool additional plugins to work with this version. If you want to use a newer plugin or coffeescript, please look at the other branches in this repo.
+The Coffeescript files in src should be able to compile into javascript using `make`. In order to download the most recent version of Coffeescript which has more support for async, download Coffeescript from the npm package manager:
 
+- https://www.npmjs.com/get-npm
+- https://www.npmjs.com/package/coffeescript
+
+You can use any Javascript plugins that work with jsPsych v6.3.0. Look at the plugins in static/js/jsPsych and the jsPsych documentation if you want to create your own.
 
 To get started with running the flask app, create a psiturk virtual environment or conda environment and install psiturk:
 
