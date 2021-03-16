@@ -13,84 +13,172 @@ jsPsych.plugins['survey-text'] = (function() {
 
   var plugin = {};
 
+  plugin.info = {
+    name: 'survey-text',
+    description: '',
+    parameters: {
+      questions: {
+        type: jsPsych.plugins.parameterType.COMPLEX,
+        array: true,
+        pretty_name: 'Questions',
+        default: undefined,
+        nested: {
+          prompt: {
+            type: jsPsych.plugins.parameterType.STRING,
+            pretty_name: 'Prompt',
+            default: undefined,
+            description: 'Prompt for the subject to response'
+          },
+          placeholder: {
+            type: jsPsych.plugins.parameterType.STRING,
+            pretty_name: 'Placeholder',
+            default: "",
+            description: 'Placeholder text in the textfield.'
+          },
+          rows: {
+            type: jsPsych.plugins.parameterType.INT,
+            pretty_name: 'Rows',
+            default: 1,
+            description: 'The number of rows for the response text box.'
+          },
+          columns: {
+            type: jsPsych.plugins.parameterType.INT,
+            pretty_name: 'Columns',
+            default: 40,
+            description: 'The number of columns for the response text box.'
+          },
+          required: {
+            type: jsPsych.plugins.parameterType.BOOL,
+            pretty_name: 'Required',
+            default: false,
+            description: 'Require a response'
+          },
+          name: {
+            type: jsPsych.plugins.parameterType.STRING,
+            pretty_name: 'Question Name',
+            default: '',
+            description: 'Controls the name of data values associated with this question'
+          }
+        }
+      },
+      preamble: {
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: 'Preamble',
+        default: null,
+        description: 'HTML formatted string to display at the top of the page above all the questions.'
+      },
+      button_label: {
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: 'Button label',
+        default:  'Continue',
+        description: 'The text that appears on the button to finish the trial.'
+      },
+      autocomplete: {
+        type: jsPsych.plugins.parameterType.BOOL,
+        pretty_name: 'Allow autocomplete',
+        default: false,
+        description: "Setting this to true will enable browser auto-complete or auto-fill for the form."
+      }
+    }
+  }
+
   plugin.trial = function(display_element, trial) {
 
-    trial.preamble = typeof trial.preamble == 'undefined' ? "" : trial.preamble;
-    if (typeof trial.rows == 'undefined') {
-      trial.rows = [];
-      for (var i = 0; i < trial.questions.length; i++) {
-        trial.rows.push(3);
+    for (var i = 0; i < trial.questions.length; i++) {
+      if (typeof trial.questions[i].rows == 'undefined') {
+        trial.questions[i].rows = 1;
       }
     }
-    if (typeof trial.columns == 'undefined') {
-      trial.columns = [];
-      for (var i = 0; i < trial.questions.length; i++) {
-        trial.columns.push(60);
+    for (var i = 0; i < trial.questions.length; i++) {
+      if (typeof trial.questions[i].columns == 'undefined') {
+        trial.questions[i].columns = 40;
+      }
+    }
+    for (var i = 0; i < trial.questions.length; i++) {
+      if (typeof trial.questions[i].value == 'undefined') {
+        trial.questions[i].value = "";
       }
     }
 
-    // if any trial variables are functions
-    // this evaluates the function and replaces
-    // it with the output of the function
-    trial = jsPsych.pluginAPI.evaluateFunctionParameters(trial);
-
+    var html = '';
     // show preamble text
-    display_element.append($('<div>', {
-      "id": 'jspsych-survey-text-preamble',
-      "class": 'jspsych-survey-text-preamble'
-    }));
-
-    $('#jspsych-survey-text-preamble').html(trial.preamble);
+    if(trial.preamble !== null){
+      html += '<div id="jspsych-survey-text-preamble" class="jspsych-survey-text-preamble">'+trial.preamble+'</div>';
+    }
+    // start form
+    if (trial.autocomplete) {
+      html += '<form id="jspsych-survey-text-form">';
+    } else {
+      html += '<form id="jspsych-survey-text-form" autocomplete="off">';
+    }
+    // generate question order
+    var question_order = [];
+    for(var i=0; i<trial.questions.length; i++){
+      question_order.push(i);
+    }
+    if(trial.randomize_question_order){
+      question_order = jsPsych.randomization.shuffle(question_order);
+    }
 
     // add questions
     for (var i = 0; i < trial.questions.length; i++) {
-      // create div
-      display_element.append($('<div>', {
-        "id": 'jspsych-survey-text-' + i,
-        "class": 'jspsych-survey-text-question'
-      }));
-
-      // add question text
-      $("#jspsych-survey-text-" + i).append('<p class="jspsych-survey-text">' + trial.questions[i] + '</p>');
-
-      // add text box
-      $("#jspsych-survey-text-" + i).append('<textarea name="#jspsych-survey-text-response-' + i + '" cols="' + trial.columns[i] + '" rows="' + trial.rows[i] + '"></textarea>');
+      var question = trial.questions[question_order[i]];
+      var question_index = question_order[i];
+      html += '<div id="jspsych-survey-text-'+question_index+'" class="jspsych-survey-text-question" style="margin: 2em 0em;">';
+      html += '<p class="jspsych-survey-text">' + question.prompt + '</p>';
+      var autofocus = i == 0 ? "autofocus" : "";
+      var req = question.required ? "required" : "";
+      if(question.rows == 1){
+        html += '<input type="text" id="input-'+question_index+'"  name="#jspsych-survey-text-response-' + question_index + '" data-name="'+question.name+'" size="'+question.columns+'" '+autofocus+' '+req+' placeholder="'+question.placeholder+'"></input>';
+      } else {
+        html += '<textarea id="input-'+question_index+'" name="#jspsych-survey-text-response-' + question_index + '" data-name="'+question.name+'" cols="' + question.columns + '" rows="' + question.rows + '" '+autofocus+' '+req+' placeholder="'+question.placeholder+'"></textarea>';
+      }
+      html += '</div>';
     }
 
     // add submit button
-    display_element.append($('<button>', {
-      'id': 'jspsych-survey-text-next',
-      'class': 'btn btn-primary btn-lg'
-    }));
-    $("#jspsych-survey-text-next").html(trial.button);
-    $("#jspsych-survey-text-next").click(function() {
+    html += '<input type="submit" id="jspsych-survey-text-next" class="jspsych-btn jspsych-survey-text" value="'+trial.button_label+'"></input>';
+
+    html += '</form>'
+    display_element.innerHTML = html;
+
+    // backup in case autofocus doesn't work
+    display_element.querySelector('#input-'+question_order[0]).focus();
+
+    display_element.querySelector('#jspsych-survey-text-form').addEventListener('submit', function(e) {
+      e.preventDefault();
       // measure response time
-      var endTime = (new Date()).getTime();
+      var endTime = performance.now();
       var response_time = endTime - startTime;
 
       // create object to hold responses
       var question_data = {};
-      $("div.jspsych-survey-text-question").each(function(index) {
+      
+      for(var index=0; index < trial.questions.length; index++){
         var id = "Q" + index;
-        var val = $(this).children('textarea').val();
+        var q_element = document.querySelector('#jspsych-survey-text-'+index).querySelector('textarea, input'); 
+        var val = q_element.value;
+        var name = q_element.attributes['data-name'].value;
+        if(name == ''){
+          name = id;
+        }        
         var obje = {};
-        obje[id] = val;
-        $.extend(question_data, obje);
-      });
-
+        obje[name] = val;
+        Object.assign(question_data, obje);
+      }
       // save data
       var trialdata = {
-        "rt": response_time,
-        "responses": JSON.stringify(question_data)
+        rt: response_time,
+        response: question_data
       };
 
-      display_element.html('');
+      display_element.innerHTML = '';
 
       // next trial
       jsPsych.finishTrial(trialdata);
     });
 
-    var startTime = (new Date()).getTime();
+    var startTime = performance.now();
   };
 
   return plugin;
