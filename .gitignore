@@ -1,0 +1,7 @@
+*.pyc
+.psiturk_history
+server.log
+.ipynb_checkpoints/
+data/
+*.db
+.DS_Store
