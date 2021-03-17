@@ -1,5 +1,12 @@
 # Mouselab MDP
 
+## Publishing your code
+
+1. Go through the directory to make sure there is no private data which accidentally snuck in
+2. Remove the config.txt (uncomment out .gitignore line) or remove the lines in the config.txt which are secret
+
+#TODO please add to this checklist!
+
 ## Requirements
 
 The Coffeescript files in src should be able to compile into javascript using `make`. In order to download the most recent version of Coffeescript which has more support for async, download Coffeescript from the npm package manager:
