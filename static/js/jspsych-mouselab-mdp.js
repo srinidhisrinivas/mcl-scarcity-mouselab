@@ -596,7 +596,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     mouseoverState(g, s) {
       // LOG_DEBUG "mouseoverState #{s}"
       if (this.stateLabels && this.stateDisplay === 'hover') {
-        // webppl.run('flip()', (s, x) -> g.setLabel (Number x))
         g.setLabel(this.stateLabels[s]);
         return this.recordQuery('mouseover', 'state', s);
       }

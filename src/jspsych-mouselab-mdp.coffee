@@ -539,7 +539,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     mouseoverState: (g, s) =>
       # LOG_DEBUG "mouseoverState #{s}"
       if @stateLabels and @stateDisplay is 'hover'
-        # webppl.run('flip()', (s, x) -> g.setLabel (Number x))
         g.setLabel @stateLabels[s]
         @recordQuery 'mouseover', 'state', s
 
