@@ -191,45 +191,54 @@ def turkprime():
     else:
         raise ExperimentError('status_incorrectly_set')
 
-def get_participants(codeversion):
-    participants = Participant\
-        .query\
-        .filter(Participant.codeversion == codeversion)\
-        .filter(Participant.status > 2)\
-        .all()
-    return participants
-
-
-@custom_code.route('/data/<codeversion>/<name>', methods=['GET'])
-@myauth.requires_auth
-@nocache
-def download_datafiles(codeversion, name):
-    contents = {
-        "trialdata": lambda p: p.get_trial_data(),
-        "eventdata": lambda p: p.get_event_data(),
-        "questiondata": lambda p: p.get_question_data()
-    }
-
-    if name not in contents:
-        abort(404)
-
-    query = get_participants(codeversion)
-    data = []
-    for p in query:
-        try:
-            data.append(contents[name](p))
-        except TypeError:
-            current_app.logger.error("Error loading {} for {}".format(name, p))
-            current_app.logger.error(format_exc())
-    ret = "".join(data)
-    response = Response(
-        ret,
-        content_type="text/csv",
-        headers={
-            'Content-Disposition': 'attachment;filename=%s.csv' % name
-        })
-
-    return response
+"""
+Only uncomment this if you are not downloading the data in another way.
+Please make login_username and login_pw (in config.txt) something relatively hard to guess.
+If you keep your experiment online for a longer time period for demonstration purposes, it might be a good idea to push a version with this commented out.
+"""
+# def get_participants(codeversion):
+#     participants = Participant\
+#         .query\
+#         .filter(Participant.codeversion == codeversion)\
+#         .filter(Participant.status > 2)\
+#         .all()
+#     return participants
+#
+"""
+Only uncomment this if you are not downloading the data in another way.
+Please make login_username and login_pw (in config.txt) something relatively hard to guess.
+If you keep your experiment online for a longer time period for demonstration purposes, it might be a good idea to push a version with this commented out.
+"""
+# @custom_code.route('/data/<codeversion>/<name>', methods=['GET'])
+# @myauth.requires_auth
+# @nocache
+# def download_datafiles(codeversion, name):
+#     contents = {
+#         "trialdata": lambda p: p.get_trial_data(),
+#         "eventdata": lambda p: p.get_event_data(),
+#         "questiondata": lambda p: p.get_question_data()
+#     }
+#
+#     if name not in contents:
+#         abort(404)
+#
+#     query = get_participants(codeversion)
+#     data = []
+#     for p in query:
+#         try:
+#             data.append(contents[name](p))
+#         except TypeError:
+#             current_app.logger.error("Error loading {} for {}".format(name, p))
+#             current_app.logger.error(format_exc())
+#     ret = "".join(data)
+#     response = Response(
+#         ret,
+#         content_type="text/csv",
+#         headers={
+#             'Content-Disposition': 'attachment;filename=%s.csv' % name
+#         })
+#
+#     return response
 
 
 MAX_BONUS = 10
