@@ -377,7 +377,7 @@ initializeExperiment = ->
 
   additional_base = {
     type: "html-keyboard-response"
-    choices: ['space']
+    choices: [" "]
     stimulus: """
         <h1> Get ready to start the game! </h1>
 

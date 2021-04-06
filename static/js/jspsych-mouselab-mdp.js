@@ -93,13 +93,13 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
     return obj;
   };
-  KEYS = mapObject({
-    up: 'uparrow',
-    down: 'downarrow',
-    right: 'rightarrow',
-    left: 'leftarrow',
-    simulate: 'space'
-  }, jsPsych.pluginAPI.convertKeyCharacterToKeyCode);
+  KEYS = {
+    up: "arrowup",
+    down: "arrowdown",
+    right: "arrowright",
+    left: "arrowleft",
+    simulate: " "
+  };
   RIGHT_MESSAGE = '\xa0'.repeat(8) + 'Score: <span id=mouselab-score/>';
   // =============================== #
   // ========= MouselabMDP ========= #
@@ -390,7 +390,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       this.blockOver = true;
       jsPsych.pluginAPI.cancelAllKeyboardResponses();
       return this.keyListener = jsPsych.pluginAPI.getKeyboardResponse({
-        valid_responses: ['space'],
+        valid_responses: [" "],
         rt_method: 'performance',
         persist: false,
         allow_held_key: false,
@@ -657,7 +657,7 @@ Press <code>space</code> to return to your corporeal form.`);
         keys = [];
       }
       if (this.allowSimulation) {
-        keys.push('space');
+        keys.push(" ");
       }
       if (!keys.length) {
         this.complete = true;
@@ -850,7 +850,7 @@ It took you ` + this.data.displayed_time + ` seconds to get to the edge of the w
       $('.mouselab-score').css('color', redGreen(this.data.score));
       $('.mouselab-score').css('font-weight', 'bold');
       return this.keyListener = jsPsych.pluginAPI.getKeyboardResponse({
-        valid_responses: ['space'],
+        valid_responses: [" "],
         rt_method: 'performance',
         persist: false,
         allow_held_key: false,

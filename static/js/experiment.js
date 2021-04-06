@@ -485,7 +485,7 @@ You <em>must</em> pass the quiz in at most <strong>${MAX_REPETITIONS}</strong> a
   };
   additional_base = {
     type: "html-keyboard-response",
-    choices: ['space'],
+    choices: [" "],
     stimulus: `<h1> Get ready to start the game! </h1>
 
 Thank you for reading the instructions.

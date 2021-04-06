@@ -80,13 +80,13 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         throw new Error "#{k} is undefined"
     obj
 
-  KEYS = mapObject
-    up: 'uparrow'
-    down: 'downarrow',
-    right: 'rightarrow',
-    left: 'leftarrow',
-    simulate: 'space'
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode
+  KEYS =
+    up: "arrowup"
+    down: "arrowdown",
+    right: "arrowright",
+    left: "arrowleft",
+    simulate: " "
+
 
   RIGHT_MESSAGE = '\xa0'.repeat(8) + 'Score: <span id=mouselab-score/>'
 
@@ -339,7 +339,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       @blockOver = true
       jsPsych.pluginAPI.cancelAllKeyboardResponses()
       @keyListener = jsPsych.pluginAPI.getKeyboardResponse
-        valid_responses: ['space']
+        valid_responses: [" "]
         rt_method: 'performance'
         persist: false
         allow_held_key: false
@@ -563,7 +563,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       else
         keys = []
       if @allowSimulation
-        keys.push 'space'
+        keys.push " "
       if not keys.length
         @complete = true
         @checkFinished()
@@ -724,7 +724,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       $('.mouselab-score').css 'color', redGreen @data.score
       $('.mouselab-score').css 'font-weight', 'bold'
       @keyListener = jsPsych.pluginAPI.getKeyboardResponse
-        valid_responses: ['space']
+        valid_responses: [" "]
         rt_method: 'performance'
         persist: false
         allow_held_key: false
