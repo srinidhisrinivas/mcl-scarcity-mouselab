@@ -34,7 +34,12 @@ RLDM paper: https://osf.io/7wcya/
    - https://atlas.is.localnet/confluence/pages/viewpage.action?pageId=83136263
   
 In short. you will need to:
+1. Pull this repository 
+2. Make adjustments locally
+3. Test locally (setup a sqlite for testing locally)
+4. If everything is working locally, you can proceed to move your experiment online
 
+### Move your experiment online
 1. Create a Heroku app, and attache the mouselab mdp database
 ```
     heroku create YOUR_APP_NAME --buildpack heroku/python --region eu
