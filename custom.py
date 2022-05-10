@@ -23,7 +23,7 @@ config = PsiturkConfig()
 config.load_config()
 
 # if you want to add a password protect route use this
-myauth = PsiTurkAuthorization(config)
+# myauth = PsiTurkAuthorization(config)
 
 # explore the Blueprint
 custom_code = Blueprint(
