@@ -241,7 +241,7 @@ If you keep your experiment online for a longer time period for demonstration pu
 #     return response
 
 
-MAX_BONUS = 10
+MAX_BONUS = 10 #TODO you can set a max bonus here if needed, I've set it to 1000 since we do this in exp.coffee
 
 @custom_code.route('/compute_bonus', methods=['GET'])
 def compute_bonus():
