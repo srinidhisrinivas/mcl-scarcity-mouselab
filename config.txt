@@ -1,46 +1,176 @@
-[HIT Configuration]
-title = Example JsPsych Psiturk Experiment
-description = For educational purposes
-amt_keywords = psychology, experiment
-lifetime = 24
-us_only = false
-# set a reasonable approve_requirement (e.g. 95), 0 is for testing purposes only
-approve_requirement = 0
-contact_email_on_error = re-mturk@tuebingen.mpg.de
-ad_group = psychology
-organization_name = Max Planck Institute
-browser_exclude_rule = MSIE, mobile, tablet
-allow_repeats = false
-
-[Database Parameters]
-database_url = <URI you get from heroku CLI>
-table_name = participants
-
-[Server Parameters]
-host = 0.0.0.0
-port = 22361
-cutoff_time = 60
-logfile = server.log
-loglevel = 2
-debug = true
-login_username =
-login_pw =
-threads = 1
-secret_key = 'this is my secret key which is hard to guess, i should change this'
-# adserver_revproxy_host = mouselab-mdp-example.herokuapp.com
-
-[Task Parameters]
-experiment_code_version = <your unique experiment version>
-num_conds = 1
-num_counters = 1
-
-[Shell Parameters]
-launch_in_sandbox_mode = true
-bonus_message = "Thanks for participating!"
-
-# If you are not using the psiturk ad server, set `use_psiturk_ad_server` to `false` and point `ad_location` to your proxy server <host> and <port>. Format the ad_location like this:
+####################### Psiturk Configuration Defaults #########################
 #
-#   https://<host>:<port>/ad 
+# Example config file. Uncomment lines (remove the `;`)
+# in order to override defaults.
+#
 
-use_psiturk_ad_server = false
-ad_location = <your domain>
+############################ HIT Configuration #################################
+[HIT Configuration]
+# REG: We don't post these HITs using psiturk when using Cloudresearch or Prolific.
+# REG: So we remove options which only apply to that.
+
+# A list of web browsers, delineated by commas, that mturkers may _not_ use to
+# perform the hit.
+#
+# The following possible values are checked by using properties on the `user_agents` python library.
+#     possible values : mobile, tablet, touchcapable, pc, bot, safari
+#
+# Example of excluding Microsoft Internet Explorer:
+#     browser_exclude_rule = MSIE
+# otherwise, the string is checked against the user_agent_string. Example, to exclude
+# internet explorer:
+#      browser_exclude_rule : MSIE
+#
+# By default, MISE, mobile, and tablet are all excluded
+browser_exclude_rule = MSIE, mobile, tablet
+
+# Whether workers can perform the hit multiple times. Enforced by the psiturk
+# server; not by mturk.
+# REG: CHANGE THIS! Should be "true" when using the Turkprime route, otherwise select for naïveté with "false".
+allow_repeats = true
+
+############################## Database Parameters #############################
+[Database Parameters]
+# Participant data will be stored in this database.
+# If ON_CLOUD=1, then this defaults to env var $DATABASE_URL, if set.
+# REG: This should be set on Heroku or in the environment variables when not using Docker.
+;database_url = sqlite:///participants.db
+
+# psiTurk creates several database tables to store data and to manage aspects of
+# automated tasks, campaigns, etc...
+# if multiple users share the same database these value need to be changed to be
+# unique for each experiment.
+
+# Name of the database table where participant data will be stored
+;assignments_table_name =
+
+# Deprecated. Use `assignments_table_name` instead.
+#
+# For backwards compatibility, `assignments_table_name` is synonymous with `table_name`. If
+# both are set, `assignments_table_name` will be preferred over `table_name`.
+table_name = assignments
+
+# Name of the database table where hit information is stored
+hits_table_name = amt_hit
+
+# Name of the database table where campaign information is stored
+campaigns_table_name = campaign
+
+# Name of the database table where the task scheduler (apscheduler) places jobs
+;jobs_table_name = apscheduler_jobs
+
+############################# Server Parameters ################################
+[Server Parameters]
+# Host on which the psiturk gunicorn server will listen when `psiturk server on`
+# is run.
+#
+# If env var ON_CLOUD=1, then this defaults to 0.0.0.0
+host = 0.0.0.0
+
+# Port on which the psiturk gunicorn server will listen when `psiturk server on`
+# is run.
+#
+# If env var ON_CLOUD=1, then this defaults to $PORT env var, if set
+# REG: This should be set on Heroku (automatically) or in the environment variables when not using Docker.
+;port = 22362
+
+# Filename for psiturk server logging.
+#
+# If ON_CLOUD env var is set, then these both default to stdout (-)
+#
+accesslog = -
+errorlog = -
+# For backwards compatibility, `logfile` is synonymous with `errorlog`. If
+# both are set, `errorlog` will be preferred over `logfile`.
+;logfile = server.log
+
+# Log level for the psiturk gunicorn server
+;loglevel = 2
+
+# Controls whether the dashboard is enabled
+;enable_dashboard = false
+
+# Controls whether the scheduler will run. If true, then num_threads must be 1
+# Be very careful to only have one scheduler run for a given study in any
+# given place! Consider running a separate psiturk server somewhere else, that
+# has the same database_url and table_name settings, which you only use
+# for its dashboard and task runner.
+;do_scheduler = false
+
+# Login username for the dashboard
+;login_username =
+
+# Login password for the dashboard
+;login_pw =
+
+# Number of threads for the psiturk gunicorn server to use. Leave to 1 if using
+# the task runner! Otherwise, dynamically dependent on the number of cpus.
+# If ON_CLOUD=1, then threads defaults to 1.
+threads = 1
+
+# The secret key used by flask for any secure functions it uses. Not necessary
+# to set unless using a secure function.
+# e.g.,
+#     secret_key = 'this is my secret key which is hard to guess, i should change this'
+;secret_key =
+
+# The psiturk (gunicorn) server can optionally serve traffic over https. This is
+# normally not necessary if the psiturk server is set up behind a reverse proxy
+# server, as is the default case with cloud hosting providers such as heroku.
+#
+# In reverse-proxy situations,
+# the reverse proxy communicates with web browsers and other clients over https,
+# while communicating on the backend with the gunicorn server over http. The
+# psiturk server would only be listening on localhost and would not serve
+# traffic directly.
+#
+# To have gunicorn use https, set both the `certfile` and `keyfile` below to point
+# to a project-relative path to the public and private keys respectively.
+
+# Project-relative path to public keyfile for ssl for gunicorn
+#     certfile = <path_to.crt>
+;certfile =
+
+# Project-relative path to private keyfile for ssl for gunicron
+#     keyfile = <path_to.key>
+;keyfile =
+
+# How long in seconds a gunicorn worker should wait for any synchronous calls
+# to complete. This would only be relevant if one of your routes makes a
+# potentially long-polling api or database call before returning.
+;server_timeout = 30
+
+################################## Task Parameters #############################
+# Settings used by various task Flask routes
+[Task Parameters]
+# The code_version for the task. Logged as a field in the database for each
+# participant, useful for data analysis. The random balanced assignment depends
+# on this setting -- it will do balanced random assignment within a given codeversion.
+# Can be any string value -- recommended to use semantic versioning for analysis
+# sanity.
+# REG: CHANGE THIS!
+experiment_code_version = 0.0.1
+
+# The number of possible treatments. Used for random balanced assignment.
+# REG: CHANGE THIS!
+num_conds = 5
+
+# The number of possible counterbalance conditions. Used for random balanced assignment.
+# If you don't know what this is, it is safe to leave it at a default of 1 and
+# to only modify `num_conds` above.
+;num_counters = 1
+
+contact_email_on_error = re-mturk@tuebingen.mpg.de
+
+# Maximum expected time for a participant to complete the task.
+# Exclusively used in determining random assignment -- basically, how long should
+# a participant be given to complete the task after starting? How long should the
+# task last? This is different than the `duration` specified when running
+# `hit create`, because a participant may not start the task immediately after
+# accepting it, while the hit `duration` starts ticking as soon as the hit is
+# accepted (some workers queue their accepted hits before starting it).
+;cutoff_time = 30
+
+################################## Shell Parameters ############################
+[Shell Parameters]
+# We don't use the shell when using Cloudresearch or Prolific.
