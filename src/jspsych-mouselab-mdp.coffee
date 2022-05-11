@@ -95,6 +95,7 @@ RIGHT_MESSAGE = '\xa0'.repeat(8) + 'Score: <span id=mouselab-score/>'
 class MouselabMDP
   constructor: (config) ->
     {
+      @jsPsych
       @display  # html display element
 
       @graph  # defines transition and reward functions
@@ -335,16 +336,16 @@ class MouselabMDP
 
   endBlock: () ->
     @blockOver = true
-    jsPsych.pluginAPI.cancelAllKeyboardResponses()
-    @keyListener = jsPsych.pluginAPI.getKeyboardResponse
+    @jsPsych.pluginAPI.cancelAllKeyboardResponses()
+    @keyListener = @jsPsych.pluginAPI.getKeyboardResponse
       valid_responses: [" "]
       rt_method: 'performance'
       persist: false
       allow_held_key: false
       callback_function: (info) =>
-        jsPsych.finishTrial @data
+        @jsPsych.finishTrial @data
         do @display.empty
-        do jsPsych.endCurrentTimeline
+        do @jsPsych.endCurrentTimeline
 
   # ---------- Responding to user input ---------- #
 
@@ -568,7 +569,7 @@ class MouselabMDP
       return
     unless (mdp.showParticipant or @waiting)
       # Start key listener.
-      @keyListener = jsPsych.pluginAPI.getKeyboardResponse
+      @keyListener = @jsPsych.pluginAPI.getKeyboardResponse
         valid_responses: keys
         rt_method: 'performance'
         persist: false
@@ -622,7 +623,7 @@ class MouselabMDP
 
   run: =>
     # document.body.style.cursor = 'crosshair'
-    jsPsych.pluginAPI.cancelAllKeyboardResponses()
+    @jsPsych.pluginAPI.cancelAllKeyboardResponses()
     LOG_DEBUG 'run'
     @buildMap()
     fabric.Image.fromURL @playerImage, ((img) =>
@@ -721,7 +722,7 @@ class MouselabMDP
     $('.mouselab-score').html '$' + @data.score
     $('.mouselab-score').css 'color', redGreen @data.score
     $('.mouselab-score').css 'font-weight', 'bold'
-    @keyListener = jsPsych.pluginAPI.getKeyboardResponse
+    @keyListener = @jsPsych.pluginAPI.getKeyboardResponse
       valid_responses: [" "]
       rt_method: 'performance'
       persist: false
@@ -731,7 +732,7 @@ class MouselabMDP
           @addScore Math.max(Math.round(3.0-@data.displayed_time),0)
         @data.trialTime = getTime() - @initTime
         @display.innerHTML = ''
-        jsPsych.finishTrial @data
+        @jsPsych.finishTrial @data
         # do @stage.empty
 
   checkFinished: =>
@@ -938,12 +939,12 @@ class Text extends fabric.Text
 # ================================= #
 # ========= jsPsych stuff ========= #
 # ================================= #
-jsPsychMouselabMDP: ((jspsych) ->
+jsPsychMouselabMDP = ((jspsych) ->
     'use strict'
 
     class jsPsychMouselabMDPPlugin
-        constructor: (@jsPsych) ->
-
+        constructor: (jsPsych) ->
+            @jsPsych = jsPsych
         trial: (display_element, trialConfig) ->
             trialConfig.display = display_element
             trialConfig.jsPsych = @jsPsych;
