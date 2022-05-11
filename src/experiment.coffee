@@ -63,6 +63,21 @@ bonus_text = undefined
 early_nodes = undefined
 final_nodes = undefined
 
+jsPsych = initJsPsych(
+    display_element: 'jspsych-target'
+    on_finish: ->
+      if DEBUG and not DEBUG_SUBMIT
+        jsPsych.data.displayData()
+      else
+        psiturk.recordUnstructuredData 'final_bonus', calculateBonus()
+        psiturk.recordUnstructuredData 'displayed_bonus', BONUS
+        save_data()
+
+    on_data_update: (data) ->
+      # console.log 'data', data
+      psiturk.recordTrialData data
+      psiturk.saveData()
+)
 psiturk = new PsiTurk uniqueId, adServerLoc, mode
 saveData = ->
   new Promise (resolve, reject) ->
@@ -98,7 +113,7 @@ $(window).on 'load', ->
   delay 300, ->
     console.log 'Loading data'
     PARAMS =
-      CODE : ['hedgehog','bighorn','chinchilla','porcupine','guanaco','walrus','dromedary','aoudad','weasel','rooster','civet','iguana','fruitbat','reindeer','bobcat','fieldmouse'][CONDITION % 16]
+      CODE : ['hedgehog','bighorn','chinchilla','porcupine','guanaco','walrus','dromedary','aoudad','weasel','rooster','civet','iguana','fruitbat','reindeer','bobcat','fieldmouse'][CONDITION %% 16]
       DEPTH : DEPTH
       COST : COST
       MIN_TIME : 7
@@ -199,7 +214,7 @@ createQuestionnaires = (quest_id, quest_data) ->
   horizontal = (length_of_options<65)
 
   questionnaire_trial = {
-    type: 'survey-multi-choice'
+    type: jsPsychSurveyMultiChoice
     randomize_question_order: false
     preamble: quest_data["preamble"]
     questions: quest_data["questions"].map (question) -> {prompt: question.prompt, name: question.question_id, options: question.labels, required:true, horizontal:horizontal}
@@ -232,7 +247,7 @@ initializeExperiment = ->
   #  ============================== #
 
   instructions = {
-    type: 'instructions'
+    type: jsPsychInstructions
     on_start: () ->
       psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
     show_clickable_nav: true
@@ -336,7 +351,7 @@ initializeExperiment = ->
       <h1> Quiz </h1>
 
     """
-    type: 'survey-multi-choice'
+    type: jsPsychSurveyMultiChoice
     questions: [
       {prompt: "What is the range of node values?", options: ['$0 to $50', '$-10 to $10', '$-48 to $48', '$-100 to $100'], horizontal: false, required: true}
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
@@ -376,7 +391,7 @@ initializeExperiment = ->
 
 
   additional_base = {
-    type: "html-keyboard-response"
+    type: jsPsychHtmlKeyboardResponse
     choices: [" "]
     stimulus: """
         <h1> Get ready to start the game! </h1>
@@ -397,7 +412,7 @@ initializeExperiment = ->
       Based on your performance, you will be awarded a total bonus of <strong>$#{calculateBonus().toFixed(2)}</strong>. Please answer the following questions about the task before moving onto the questionnaires.
 
     """
-    type: 'survey-multi-choice'
+    type: jsPsychSurveyMultiChoice
     on_finish: ->
       BONUS = calculateBonus().toFixed(2)
     questions: [
@@ -413,7 +428,7 @@ initializeExperiment = ->
 
   # typical 30 test trials, with extra cost component
   test = {
-    type: 'mouselab-mdp'
+    type: jsPsychMouselabMDP
     # display: $('#jspsych-target')
     graph: STRUCTURE.graph
     layout: STRUCTURE.layout
@@ -444,7 +459,7 @@ initializeExperiment = ->
 
   # test to see if participants stay biased
   bias_test = {
-    type: 'mouselab-mdp'
+    type: jsPsychMouselabMDP
     # display: $('#jspsych-target')
     graph: STRUCTURE.graph
     layout: STRUCTURE.layout
@@ -475,7 +490,7 @@ initializeExperiment = ->
 
   #final screen if participants didn't pass instructions quiz
   finish_fail = {
-       type: 'survey-text'
+       type: jsPsychSurveyText
        preamble: ->  """
            <h1> You've completed the HIT </h1>
 
@@ -498,7 +513,7 @@ initializeExperiment = ->
 
   #final screen, if participants actually participated
   finish = {
-    type: 'survey-text'
+    type: jsPsychSurveyText
     preamble: ->  """
         <h1> You've completed the HIT </h1>
 
@@ -519,7 +534,7 @@ initializeExperiment = ->
 
   #demographics
   demographics = {
-    type: 'survey-html-form',
+    type: jsPsychSurveyHtmlForm
     preamble: "<h1>Demographics</h1> <br> Please answer the following questions.",
     html: """
       <p>
@@ -589,16 +604,16 @@ initializeExperiment = ->
   # ================================================ #
 
   # experiment goes to full screen at start
-  experiment_timeline.unshift({type:"fullscreen", message: '<p>The experiment will switch to full screen mode when you press the button below.<br> Please do not leave full screen for the duration of the experiment. </p>', button_label:'Continue', fullscreen_mode:true, delay_after:1000})
+  experiment_timeline.unshift({type:jsPsychFullscreen, message: '<p>The experiment will switch to full screen mode when you press the button below.<br> Please do not leave full screen for the duration of the experiment. </p>', button_label:'Continue', fullscreen_mode:true, delay_after:1000})
 
   # at end, show the secret code and then leave fullscreen
   secret_code_trial = {
-      type: 'html-button-response'
+      type: jsPsychHtmlButtonResponse
       choices: ['Finish HIT']
       stimulus: () -> "The secret code is <strong>" + PARAMS.CODE.toUpperCase() + "</strong>. Please press the 'Finish HIT' button once you've copied it down to paste in the original window."
     }
   experiment_timeline.push(secret_code_trial)
-  experiment_timeline.push({type:"fullscreen", fullscreen_mode:false, delay_after:1000})
+  experiment_timeline.push({type:jsPsychFullscreen, fullscreen_mode:false, delay_after:1000})
 
   # bonus is the (roughly) total score multiplied by something, bounded by min and max amount
   calculateBonus = ->
@@ -635,20 +650,4 @@ initializeExperiment = ->
       save_data()
 
   # initialize jspsych experiment -- without this nothing happens
-  jsPsych.init
-    display_element: 'jspsych-target'
-    timeline: experiment_timeline
-    # show_progress_bar: true
-
-    on_finish: ->
-      if DEBUG and not DEBUG_SUBMIT
-        jsPsych.data.displayData()
-      else
-        psiturk.recordUnstructuredData 'final_bonus', calculateBonus()
-        psiturk.recordUnstructuredData 'displayed_bonus', BONUS
-        save_data()
-
-    on_data_update: (data) ->
-      # console.log 'data', data
-      psiturk.recordTrialData data
-      psiturk.saveData()
+  jsPsych.run([experiment_timeline])
