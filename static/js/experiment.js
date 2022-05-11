@@ -289,16 +289,15 @@ createQuestionnaires = function(quest_id, quest_data) {
   })));
   horizontal = length_of_options < 65;
   return questionnaire_trial = {
-    type: jsPsychSurveyMultiChoice,
+    type: jsPsychSurveyLikert,
     randomize_question_order: false,
     preamble: quest_data["preamble"],
     questions: quest_data["questions"].map(function(question) {
       return {
         prompt: question.prompt,
         name: question.question_id,
-        options: question.labels,
-        required: true,
-        horizontal: horizontal
+        labels: question.labels,
+        required: true
       };
     }),
     data: {
@@ -829,5 +828,5 @@ Press the button to resubmit.
     });
   };
   // initialize jspsych experiment -- without this nothing happens
-  return jsPsych.run([experiment_timeline]);
+  return jsPsych.run(experiment_timeline);
 };

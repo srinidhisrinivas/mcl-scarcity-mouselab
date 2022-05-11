@@ -214,10 +214,10 @@ createQuestionnaires = (quest_id, quest_data) ->
   horizontal = (length_of_options<65)
 
   questionnaire_trial = {
-    type: jsPsychSurveyMultiChoice
+    type: jsPsychSurveyLikert
     randomize_question_order: false
     preamble: quest_data["preamble"]
-    questions: quest_data["questions"].map (question) -> {prompt: question.prompt, name: question.question_id, options: question.labels, required:true, horizontal:horizontal}
+    questions: quest_data["questions"].map (question) -> {prompt: question.prompt, name: question.question_id, labels: question.labels, required:true}
     data: {
       name: quest_data["name"]
       reverse_coded: quest_data["questions"].map (question) -> question['reverse_coded']
@@ -650,4 +650,4 @@ initializeExperiment = ->
       save_data()
 
   # initialize jspsych experiment -- without this nothing happens
-  jsPsych.run([experiment_timeline])
+  jsPsych.run(experiment_timeline)
