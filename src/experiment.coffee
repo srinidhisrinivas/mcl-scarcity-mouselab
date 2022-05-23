@@ -11,6 +11,8 @@ if DEBUG
   X X X X X X X X X X X X X X X X X
   """
   CONDITION = parseInt condition
+  console.log condition
+  CONDITION = 2
 
 else
   console.log """
@@ -376,6 +378,11 @@ initializeExperiment = ->
 
   instruct_loop = {
     timeline: [instructions, quiz]
+    conditional_function: ->
+      if DEBUG
+        return false
+      else
+        return true
     loop_function: (data) ->
       responses = data.last(1).values()[0].response
       for resp_id, response of responses
@@ -389,10 +396,9 @@ initializeExperiment = ->
     }
 
 
-
   additional_base = {
     type: jsPsychHtmlKeyboardResponse
-    choices: [" "]
+    choices: [" ","a"]
     stimulus: """
         <h1> Get ready to start the game! </h1>
 
@@ -435,10 +441,10 @@ initializeExperiment = ->
     initial: STRUCTURE.initial
     num_trials: NUM_TRIALS
     stateClickCost: () -> 1
-    num_clicks_needed: click_costs
     # stateRewards: jsPsych.timelineVariable('stateRewards',true)
     stateDisplay: 'click'
-    minTime: PARAMS.MIN_TIME
+    withholdReward: true
+    accumulateReward: true
     wait_for_click: true
     stateBorder : () -> "rgb(187,187,187,1)"#getColor
     colorInterpolation: colorInterpolation
@@ -469,8 +475,8 @@ initializeExperiment = ->
     num_clicks_needed: [0,0,0,0,0,0,0,0,0,0,0,0,0]
     # stateRewards: jsPsych.timelineVariable('stateRewards',true)
     stateDisplay: 'click'
-    minTime: PARAMS.MIN_TIME
     wait_for_click: true
+    accumulateReward: false
     stateBorder : () -> "rgb(187,187,187,1)"#getColor
     colorInterpolation: colorInterpolation
     playerImage: 'static/images/spider.png'
@@ -585,11 +591,20 @@ initializeExperiment = ->
   if_node2 = {
     timeline: [additional_base, test, bias_test, final_quiz, createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
     conditional_function: ->
-      if REPETITIONS > MAX_REPETITIONS
+      if REPETITIONS > MAX_REPETITIONS || DEBUG
         return false
       else
         return true
     }
+
+  if_node2_debug = {
+    timeline: [additional_base, test, bias_test, finish]
+    conditional_function: ->
+      if REPETITIONS > MAX_REPETITIONS || !DEBUG
+        return false
+      else
+        return true
+  }
 
   # experiment timeline up until now (conditional function properties of nodes keep if_node1 and if_node2 working as we want them)
   experiment_timeline = [
@@ -597,6 +612,7 @@ initializeExperiment = ->
     instruct_loop
     if_node1
     if_node2
+    if_node2_debug
   ]
 
   # ================================================ #

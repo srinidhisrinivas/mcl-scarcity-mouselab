@@ -34,7 +34,7 @@ allow_repeats = true
 # Participant data will be stored in this database.
 # If ON_CLOUD=1, then this defaults to env var $DATABASE_URL, if set.
 # REG: This should be set on Heroku or in the environment variables when not using Docker.
-;database_url = sqlite:///participants.db
+database_url = sqlite:///participants.db
 
 # psiTurk creates several database tables to store data and to manage aspects of
 # automated tasks, campaigns, etc...
@@ -153,7 +153,7 @@ experiment_code_version = 0.0.1
 
 # The number of possible treatments. Used for random balanced assignment.
 # REG: CHANGE THIS!
-num_conds = 5
+num_conds = 2
 
 # The number of possible counterbalance conditions. Used for random balanced assignment.
 # If you don't know what this is, it is safe to leave it at a default of 1 and

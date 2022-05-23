@@ -133,6 +133,8 @@ class MouselabMDP
       @minTime=null
       @energyLimit=null
       @clickLimit=null
+      @withholdReward=false
+      @accumulateReward=false
 
       @revealed_states=[]
       @wait_for_click= false
@@ -200,6 +202,8 @@ class MouselabMDP
       block: blockName
       trialIndex: @trialIndex
       score: 0
+      givenScore: 0
+      costs: 0
       simulationMode: []
       rewards: []
       path: []
@@ -266,7 +270,7 @@ class MouselabMDP
         TIME_LEFT = @timeLimit
 
       @resetScore()
-      @addScore @startScore
+      @addScore @startScore, false
     # -----------------------------
 
     @canvasElement = $('<canvas>',
@@ -442,7 +446,7 @@ class MouselabMDP
       onChange: @canvas.renderAll.bind(@canvas)
       onComplete: =>
         @data.rewards.push r
-        @addScore r
+        @addScore r, true
         # @spendEnergy @moveEnergy
         @arrive s1
 
@@ -482,7 +486,7 @@ class MouselabMDP
       @lowerMessage.css 'color', '#000'
 
     if @stateLabels and @stateDisplay is 'click' and not g.label.text
-      @addScore -@stateClickCost("#{s}").toFixed(2)
+      @addScore -@stateClickCost("#{s}").toFixed(2), false
       @recordQuery 'click', 'state', s
       # @spendEnergy @clickEnergy
       @spendClicks @clickClicks
@@ -580,15 +584,51 @@ class MouselabMDP
           @data.rt.push info.rt
           @handleKey s, action
 
-  addScore: (v) =>
+  addScore: (v, reward) =>
+    # Add to objective score of current trial regardless of whether reward is to be given or not
     @data.score += v
-    if!@no_add
-      if @simulationMode
-        score = @data.score
-      else
-        SCORE += v
-        score = SCORE
-        @drawScore(score.toFixed(2))
+
+    # If reward is to be withheld but click costs aren't
+    if @withholdReward
+      # Check if it is a click cost
+      if !reward
+        # Add cost to the displayed score of current trial
+        @data.costs += v
+        @data.givenScore += v
+
+        # Update the agent about the incurred cost
+        if @simulationMode
+          score = @data.givenScore
+        else
+          # If agent is user, add to total score over all trials
+          SCORE += v
+          score = SCORE
+          @drawScore(score.toFixed(2))
+
+    # If all rewards are to be given as normal
+    else
+      # Synchronize displayed score and objective score but don't show
+      @data.givenScore = @data.score
+
+      # If reward is not accumulated (i.e., not shown only at end of trial)
+      #   but is added up with each move
+      # OR if reward is accumulated but we are dealing with a click cost
+      if !@accumulateReward || !reward
+        if !reward
+          @data.costs += v
+        if @simulationMode
+          # Update agent about score change
+          score = @data.score
+        else
+          # Update user about score change by adding to total score
+          #   and displaying
+          SCORE += v
+          score = SCORE
+          @drawScore(score.toFixed(2))
+
+
+
+
 
   resetScore: =>
     @data.score = 0
@@ -705,22 +745,37 @@ class MouselabMDP
     window.clearInterval @timerID
     if @blockOver and !@displayTime
       return
+
+    # Give reward at the end
+    if @accumulateReward
+      SCORE += @data.givenScore - @data.costs
+      @drawScore(SCORE.toFixed(2));
+
+    htmlMessage = undefined
+    if @withholdReward
+      htmlMessage = """
+        You did not get a score on this round.
+        """
+    else
+      htmlMessage = """
+        You got a score of <span class=mouselab-score/> on this round.
+      """
+
     if @displayTime
-      @lowerMessage.html """
-        You made <span class=mouselab-score/> on this round.
+      @lowerMessage.html htmlMessage + """
         <br>
         It took you """+ @data.displayed_time + """ seconds to get to the edge of the web!
         <br>
         <b>Press</b> <code>space</code> <b>to continue.</b>
       """
     else
-      @lowerMessage.html """
-        You made <span class=mouselab-score/> on this round.
+      @lowerMessage.html htmlMessage + """
         <br>
         <b>Press</b> <code>space</code> <b>to continue.</b>
       """
-    $('.mouselab-score').html '$' + @data.score
-    $('.mouselab-score').css 'color', redGreen @data.score
+
+    $('.mouselab-score').html '$' + @data.givenScore
+    $('.mouselab-score').css 'color', redGreen @data.givenScore
     $('.mouselab-score').css 'font-weight', 'bold'
     @keyListener = @jsPsych.pluginAPI.getKeyboardResponse
       valid_responses: [" "]
@@ -729,7 +784,7 @@ class MouselabMDP
       allow_held_key: false
       callback_function: (info) =>
         if @displayTime
-          @addScore Math.max(Math.round(3.0-@data.displayed_time),0)
+          @addScore Math.max(Math.round(3.0-@data.displayed_time),0), true
         @data.trialTime = getTime() - @initTime
         @display.innerHTML = ''
         @jsPsych.finishTrial @data
