@@ -86,7 +86,7 @@ KEYS =
   simulate: " "
 
 
-RIGHT_MESSAGE = '\xa0'.repeat(8) + 'Score: <span id=mouselab-score/>'
+RIGHT_MESSAGE = '\xa0'.repeat(8) + '<strong>Score:</strong> <br> <span id=mouselab-score/>'
 
 # =============================== #
 # ========= MouselabMDP ========= #
@@ -191,7 +191,7 @@ class MouselabMDP
       if not @clicksLeft?
         @clicksLeft = @clickLimit
     else
-      leftMessage = "Round #{@trialCount() + 1}/#{@num_trials}"
+      leftMessage = "<strong>Round:</strong> #{@trialCount() + 1}/#{@num_trials}"
       # leftMessage = "Round #{@_block.trialCount + 1}/#{@_block.timeline.length}"
 
     @data =
@@ -766,7 +766,7 @@ class MouselabMDP
 
     if @withholdReward
       htmlMessage = """
-        The spider forgot to count this round! The collected money will still be added to your total.
+        The spider forgot to take note of the collected values this round!<br>The obtained score will still be added to your total.
         """
     else
       htmlMessage = """
@@ -775,14 +775,14 @@ class MouselabMDP
 
     if @displayTime
       @lowerMessage.html htmlMessage + """
-        <br>
+        <br><br>
         It took you """+ @data.displayed_time + """ seconds to get to the edge of the web!
         <br>
         <b>Press</b> <code>space</code> <b>to continue.</b>
       """
     else
       @lowerMessage.html htmlMessage + """
-        <br>
+        <br><br>
         <b>Press</b> <code>space</code> <b>to continue.</b>
       """
     $('.mouselab-score').html '$' + @data.score

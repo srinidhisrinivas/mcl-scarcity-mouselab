@@ -45,40 +45,48 @@
 }
 
 .mouselab-header {
-    // margin: 0;
+    margin: 0;
     float: left;
     margin-bottom: 0.5em;
     font-size: 20pt;
 }
 
 .mouselab-prompt {
-    // margin: 0;
-    width: 100%;
+    margin-top: 2.5em;
+    width: 750px;
     height: 100px;
-    // text-align: center;
-    // margin-bottom: 0.5em;
-    // font-size: 20pt;
+    text-align: center;
+    margin-bottom: 0.5em;
+    font-size: 20pt;
 }
 
 #mouselab-msg-left {
   width: 20%;
   text-align: left;
+  margin-top: 2.5em;
 }
 
 #mouselab-msg-right {
     width: 30%;
-    text-align: left;
+    text-align: right;
+    margin-top: 2.5em;
 }
 #mouselab-msg-center {
     width: 50%;
     text-align: center;
+    margin-top: 2.5em;
 }
 
 .mouselab-msg-bottom {
-    width: 100%;
+    width: 750px;
     font-size: 16pt;
     text-align: center;
-    margin-top:-8px;
+    margin-top: 8px;
+}
+
+.jspsych-content {
+    margin-top: 50px;
+    text-align: center;
 }
 
 .alert {

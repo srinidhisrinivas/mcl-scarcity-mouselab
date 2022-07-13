@@ -277,7 +277,8 @@ initializeExperiment = ->
 
         In the <em>Web of Cash</em> game you will guide a money-loving spider through a spider web. Your goal is to travel from the start of the web to the end of the web in three moves. On your way from start to finish, you will pass through the <em>nodes</em> (gray circles) of the spider web.
 
-        Each of these nodes has a certain value, and the values of the nodes that you pass through from start to finish contribute to your score for that round. Your objective on each round is to get the highest score possible. The cumulative final score over all the rounds will be your final score at the end of the game. The higher your final score at the end of the game the higher your HIT bonus will be.
+        Each of these nodes has a certain value, and the money collected from the nodes that you pass through from start to finish contribute to your score for that round. However, you will only find out your score for that round at the end of the round.
+Your objective on each round is to get the highest score possible. The cumulative final score over all the rounds will be your final score at the end of the game. The higher your final score at the end of the game the higher your HIT bonus will be.
 
         You will be able to move the spider with the arrow keys, but only in the direction
         of the arrows between the nodes. The image below shows the shape of all the webs that you will be navigating in when the game starts.
@@ -307,6 +308,7 @@ initializeExperiment = ->
         <div style="text-align: left">
         <li>Each node of the web either contains a reward of up to <strong><font color='green'>$48</font></strong> or a loss of up to <strong><font color='red'>$-48</font></strong></li>
         <li>You can find out about a node's loss or reward by using the node inspector, which costs <strong>$#{COST_FORMATTED} per revealed node.</strong></li>
+        <li>In each round, you can see the score for that round in the top right corner.</li>
         <li>At the end of the round, you will be told what your score for that round is.</li>
         <li>But there's a catch! The spider, being very focused on collecting the money, sometimes forgets to count how much money it has collected. If the spider forgets to count on a round, <strong>you will not be told what your score for that round is</strong>. Since the spider collects the money nonetheless, <strong>your score for that round will still contribute to your final score for the game</strong>, when all the collected money is counted at the end.</li>
 

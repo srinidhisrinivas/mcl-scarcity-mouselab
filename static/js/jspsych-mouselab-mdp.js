@@ -116,7 +116,7 @@ KEYS = {
   simulate: " "
 };
 
-RIGHT_MESSAGE = '\xa0'.repeat(8) + 'Score: <span id=mouselab-score/>';
+RIGHT_MESSAGE = '\xa0'.repeat(8) + '<strong>Score:</strong> <br> <span id=mouselab-score/>';
 
 // =============================== #
 // ========= MouselabMDP ========= #
@@ -255,7 +255,7 @@ MouselabMDP = class MouselabMDP {
         this.clicksLeft = this.clickLimit;
       }
     } else {
-      leftMessage = `Round ${this.trialCount() + 1}/${this.num_trials}`;
+      leftMessage = `<strong>Round:</strong> ${this.trialCount() + 1}/${this.num_trials}`;
     }
     // leftMessage = "Round #{@_block.trialCount + 1}/#{@_block.timeline.length}"
     this.data = {
@@ -909,12 +909,12 @@ Press <code>space</code> to return to your corporeal form.`);
       htmlMessage = `You got a score of <span class=mouselab-score/> on this round.`;
     }
     if (this.displayTime) {
-      this.lowerMessage.html(htmlMessage + `<br>
+      this.lowerMessage.html(htmlMessage + `<br><br>
 It took you ` + this.data.displayed_time + ` seconds to get to the edge of the web!
 <br>
 <b>Press</b> <code>space</code> <b>to continue.</b>`);
     } else {
-      this.lowerMessage.html(htmlMessage + `<br>
+      this.lowerMessage.html(htmlMessage + `<br><br>
 <b>Press</b> <code>space</code> <b>to continue.</b>`);
     }
     $('.mouselab-score').html('$' + this.data.score);
