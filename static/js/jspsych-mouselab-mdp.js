@@ -148,6 +148,41 @@ MouselabMDP = class MouselabMDP {
     // Called when the player arrives in a new state.
     this.arrive = this.arrive.bind(this);
     this.addScore = this.addScore.bind(this);
+    //    # If reward is to be withheld but click costs aren't
+    //    if @withholdReward
+    //      # Check if it is a click cost
+    //      if !reward
+    //        # Add cost to the displayed score of current trial
+    //        @data.costs += v
+
+    //        # Update the agent about the incurred cost
+    //        if @simulationMode
+    //          score = @data.score
+    //        else
+    //          # If agent is user, add to total score over all trials
+    //          SCORE += v
+    //          score = SCORE
+    //          @drawScore(@data.score.toFixed(2))
+
+    //    # If all rewards are to be given as normal
+    //    else
+    //      # Synchronize displayed score and objective score but don't show
+
+    //      # If reward is not accumulated (i.e., not shown only at end of trial)
+    //      #   but is added up with each move
+    //      # OR if reward is accumulated but we are dealing with a click cost
+    //      if !@accumulateReward || !reward
+    //        if !reward
+    //          @data.costs += v
+    //        if @simulationMode
+    //          # Update agent about score change
+    //          score = @data.score
+    //        else
+    //          # Update user about score change by adding to total score
+    //          #   and displaying
+    //          SCORE += v
+    //          score = SCORE
+    //          @drawScore(score.toFixed(2))
     this.resetScore = this.resetScore.bind(this);
     this.drawScore = this.drawScore.bind(this);
     // spendEnergy: (v) =>
@@ -231,7 +266,6 @@ MouselabMDP = class MouselabMDP {
       block: blockName,
       trialIndex: this.trialIndex,
       score: 0,
-      givenScore: 0,
       costs: 0,
       simulationMode: [],
       rewards: [],
@@ -652,7 +686,7 @@ Press <code>space</code> to return to your corporeal form.`);
     var a, g, keys;
     g = this.states[s];
     g.setFill(this.colorInterpolation(0, 0));
-    g.setLabel(this.stateRewards[s]);
+    //g.setLabel @stateRewards[s]
     g.setHoverLabel('');
     this.canvas.renderAll();
     this.freeze = false;
@@ -702,50 +736,24 @@ Press <code>space</code> to return to your corporeal form.`);
   }
 
   addScore(v, reward) {
-    var score;
     // Add to objective score of current trial regardless of whether reward is to be given or not
     this.data.score += v;
-    // If reward is to be withheld but click costs aren't
-    if (this.withholdReward) {
-      if (!reward) {
-        // Add cost to the displayed score of current trial
-        this.data.costs += v;
-        this.data.givenScore += v;
-        // Update the agent about the incurred cost
-        if (this.simulationMode) {
-          return score = this.data.givenScore;
-        } else {
-          // If agent is user, add to total score over all trials
-          SCORE += v;
-          score = SCORE;
-          return this.drawScore(score.toFixed(2));
-        }
+    if (!reward) {
+      this.data.costs += v;
+    }
+    if (!this.accumulateReward || !reward) {
+      // If it is a reward and we're not accumulating rewards at the end, add it to
+      //   total score right away
+      if (reward) {
+        SCORE += v;
       }
-    } else {
-      // Synchronize displayed score and objective score but don't show
-      // If all rewards are to be given as normal
-      this.data.givenScore = this.data.score;
-      if (!this.accumulateReward || !reward) {
-        if (!reward) {
-          this.data.costs += v;
-        }
-        if (this.simulationMode) {
-          // Update agent about score change
-          return score = this.data.score;
-        } else {
-          // Update user about score change by adding to total score
-          //   and displaying
-          SCORE += v;
-          score = SCORE;
-          return this.drawScore(score.toFixed(2));
-        }
-      }
+      return this.drawScore(this.data.score.toFixed(2));
     }
   }
 
   resetScore() {
     this.data.score = 0;
-    return this.drawScore(SCORE.toFixed(2));
+    return this.drawScore(this.data.score.toFixed(2));
   }
 
   drawScore(score) {
@@ -883,14 +891,20 @@ Press <code>space</code> to return to your corporeal form.`);
     if (this.blockOver && !this.displayTime) {
       return;
     }
-    // Give reward at the end
+    // Add reward to total score at the end and then display if needed
     if (this.accumulateReward) {
-      SCORE += this.data.givenScore - this.data.costs;
-      this.drawScore(SCORE.toFixed(2));
+      SCORE += this.data.score;
+      if (!this.withholdReward) {
+        this.drawScore(this.data.score.toFixed(2));
+      } else {
+        $('#mouselab-score').html('?');
+        $('#mouselab-score').css('color', redGreen(0));
+      }
     }
+    console.log("Score: " + SCORE);
     htmlMessage = void 0;
     if (this.withholdReward) {
-      htmlMessage = `You did not get a score on this round.`;
+      htmlMessage = `The spider forgot to count this round! The collected money will still be added to your total.`;
     } else {
       htmlMessage = `You got a score of <span class=mouselab-score/> on this round.`;
     }
@@ -903,8 +917,8 @@ It took you ` + this.data.displayed_time + ` seconds to get to the edge of the w
       this.lowerMessage.html(htmlMessage + `<br>
 <b>Press</b> <code>space</code> <b>to continue.</b>`);
     }
-    $('.mouselab-score').html('$' + this.data.givenScore);
-    $('.mouselab-score').css('color', redGreen(this.data.givenScore));
+    $('.mouselab-score').html('$' + this.data.score);
+    $('.mouselab-score').css('color', redGreen(this.data.score));
     $('.mouselab-score').css('font-weight', 'bold');
     return this.keyListener = this.jsPsych.pluginAPI.getKeyboardResponse({
       valid_responses: [" "],

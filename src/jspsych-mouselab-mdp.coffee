@@ -202,7 +202,6 @@ class MouselabMDP
       block: blockName
       trialIndex: @trialIndex
       score: 0
-      givenScore: 0
       costs: 0
       simulationMode: []
       rewards: []
@@ -551,7 +550,7 @@ class MouselabMDP
   arrive: (s, repeat=false) =>
     g = @states[s]
     g.setFill @colorInterpolation(0,0)
-    g.setLabel @stateRewards[s]
+    #g.setLabel @stateRewards[s]
     g.setHoverLabel ''
     @canvas.renderAll()
     @freeze = false
@@ -587,44 +586,51 @@ class MouselabMDP
   addScore: (v, reward) =>
     # Add to objective score of current trial regardless of whether reward is to be given or not
     @data.score += v
+    if !reward
+      @data.costs += v
+    if !@accumulateReward || !reward
+      # If it is a reward and we're not accumulating rewards at the end, add it to
+      #   total score right away
+      if reward
+        SCORE += v
+      @drawScore(@data.score.toFixed(2))
 
-    # If reward is to be withheld but click costs aren't
-    if @withholdReward
-      # Check if it is a click cost
-      if !reward
-        # Add cost to the displayed score of current trial
-        @data.costs += v
-        @data.givenScore += v
 
-        # Update the agent about the incurred cost
-        if @simulationMode
-          score = @data.givenScore
-        else
-          # If agent is user, add to total score over all trials
-          SCORE += v
-          score = SCORE
-          @drawScore(score.toFixed(2))
-
-    # If all rewards are to be given as normal
-    else
-      # Synchronize displayed score and objective score but don't show
-      @data.givenScore = @data.score
-
-      # If reward is not accumulated (i.e., not shown only at end of trial)
-      #   but is added up with each move
-      # OR if reward is accumulated but we are dealing with a click cost
-      if !@accumulateReward || !reward
-        if !reward
-          @data.costs += v
-        if @simulationMode
-          # Update agent about score change
-          score = @data.score
-        else
-          # Update user about score change by adding to total score
-          #   and displaying
-          SCORE += v
-          score = SCORE
-          @drawScore(score.toFixed(2))
+#    # If reward is to be withheld but click costs aren't
+#    if @withholdReward
+#      # Check if it is a click cost
+#      if !reward
+#        # Add cost to the displayed score of current trial
+#        @data.costs += v
+#
+#        # Update the agent about the incurred cost
+#        if @simulationMode
+#          score = @data.score
+#        else
+#          # If agent is user, add to total score over all trials
+#          SCORE += v
+#          score = SCORE
+#          @drawScore(@data.score.toFixed(2))
+#
+#    # If all rewards are to be given as normal
+#    else
+#      # Synchronize displayed score and objective score but don't show
+#
+#      # If reward is not accumulated (i.e., not shown only at end of trial)
+#      #   but is added up with each move
+#      # OR if reward is accumulated but we are dealing with a click cost
+#      if !@accumulateReward || !reward
+#        if !reward
+#          @data.costs += v
+#        if @simulationMode
+#          # Update agent about score change
+#          score = @data.score
+#        else
+#          # Update user about score change by adding to total score
+#          #   and displaying
+#          SCORE += v
+#          score = SCORE
+#          @drawScore(score.toFixed(2))
 
 
 
@@ -632,7 +638,7 @@ class MouselabMDP
 
   resetScore: =>
     @data.score = 0
-    @drawScore SCORE.toFixed(2)
+    @drawScore @data.score.toFixed(2)
 
   drawScore: (score)=>
     $('#mouselab-score').html ('$' + score)
@@ -746,15 +752,21 @@ class MouselabMDP
     if @blockOver and !@displayTime
       return
 
-    # Give reward at the end
+    # Add reward to total score at the end and then display if needed
     if @accumulateReward
-      SCORE += @data.givenScore - @data.costs
-      @drawScore(SCORE.toFixed(2));
+      SCORE += @data.score
+      if !@withholdReward
+        @drawScore(@data.score.toFixed(2));
+      else
+        $('#mouselab-score').html ('?')
+        $('#mouselab-score').css 'color', redGreen 0
 
+    console.log("Score: " + SCORE)
     htmlMessage = undefined
+
     if @withholdReward
       htmlMessage = """
-        You did not get a score on this round.
+        The spider forgot to count this round! The collected money will still be added to your total.
         """
     else
       htmlMessage = """
@@ -773,10 +785,10 @@ class MouselabMDP
         <br>
         <b>Press</b> <code>space</code> <b>to continue.</b>
       """
-
-    $('.mouselab-score').html '$' + @data.givenScore
-    $('.mouselab-score').css 'color', redGreen @data.givenScore
+    $('.mouselab-score').html '$' + @data.score
+    $('.mouselab-score').css 'color', redGreen @data.score
     $('.mouselab-score').css 'font-weight', 'bold'
+
     @keyListener = @jsPsych.pluginAPI.getKeyboardResponse
       valid_responses: [" "]
       rt_method: 'performance'

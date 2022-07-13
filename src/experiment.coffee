@@ -12,7 +12,7 @@ if DEBUG
   """
   CONDITION = parseInt condition
   console.log condition
-  CONDITION = 2
+  CONDITION = 5
 
 else
   console.log """
@@ -27,12 +27,15 @@ if mode is "{{ mode }}"
 
   CONDITION = 0
 
-COST_ANSWERS = ["There is no cost for clicking on nodes.", "Yes, but the cost for clicking on nodes varies.", "No, the cost is always $1.00.", "It is more costly to inspect 'sticky' nodes."]
+REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5]
+REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION]
+COST = REWARDED_PROP
+COST_FORMATTED = COST.toFixed(2);
+COST_ANSWERS = ["There is no cost for clicking on nodes.", "Yes, but the cost for clicking on nodes varies.", "No, the cost is always $#{COST_FORMATTED}.", "It is more costly to inspect 'sticky' nodes."]
 COST_QUESTION = "Does the cost of clicking on a node to find out its value vary between nodes?"
 COST_CORRECT= "No, the cost is always $1.00."
 
-COST = [0,0,0][CONDITION]
-DEPTH = [5,40,80][CONDITION]
+# DEPTH = [5,40,80][CONDITION]
 
 REPETITIONS = 0 #tracks trials in instructions quiz
 MAX_REPETITIONS = 4 #max tries they get at instructions quiz
@@ -44,21 +47,33 @@ COST_EXPLANATION = undefined
 TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
-SCORE = [50, 50, 50][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
+SCORE = [0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
 BONUS_RATE = .002
-if DEBUG then NUM_BIAS_TRIALS = 3
-else NUM_BIAS_TRIALS = 10
-if DEBUG then NUM_TEST_TRIALS = 3
-else NUM_TEST_TRIALS = 30
-NUM_TRIALS =  NUM_TEST_TRIALS + NUM_BIAS_TRIALS
+
+if DEBUG
+  NUM_TEST_TRIALS = 5
+else
+  NUM_TEST_TRIALS = 30
+
+NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
+NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
+NUM_UNREWARDED_TRIALS = NUM_MDP_TRIALS - NUM_TEST_TRIALS
+NUM_DISTRACTOR_TRIALS = NUM_TRIALS - NUM_MDP_TRIALS
+NUM_DISTRACTOR_TRIALS_1 = Math.floor NUM_DISTRACTOR_TRIALS / 2
+NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
+NUM_TUTORIAL_TRIALS = 3
 MAX_AMOUNT = BONUS_RATE*(NUM_TRIALS*(4+8+48)+800)
 trialCount = 0
+distTrialCount1 = 0
+distTrialCount2 = 0
 calculateBonus = undefined
 getCost = undefined
 getColor = undefined
 colorInterpolation = undefined
 getClickCosts = undefined
 getTrials = undefined
+getScarcityTrials = undefined
+getDistractorTrials = undefined
 getRevealedTrials = undefined
 createQuestionnaires = undefined
 bonus_text = undefined
@@ -116,18 +131,12 @@ $(window).on 'load', ->
     console.log 'Loading data'
     PARAMS =
       CODE : ['hedgehog','bighorn','chinchilla','porcupine','guanaco','walrus','dromedary','aoudad','weasel','rooster','civet','iguana','fruitbat','reindeer','bobcat','fieldmouse'][CONDITION %% 16]
-      DEPTH : DEPTH
-      COST : COST
       MIN_TIME : 7
-      inspectCost: 1
+      inspectCost: COST
       startTime: Date(Date.now())
       bonusRate: BONUS_RATE
       variance: '2_4_24'
       branching: '312'
-      first_trial: (Math.random() >= 0.5)
-      colors:  ['#1b9e77','#d95f02','#7570b3']
-      color_names: ['Green', 'Orange', 'Purple']
-
 
     COST_EXPLANATION = "Some nodes may require more clicks than others."
 
@@ -144,39 +153,25 @@ $(window).on 'load', ->
     TRIALS = loadJson "static/json/rewards/#{id}.json"
     console.log "loaded #{TRIALS?.length} trials"
 
-    early_nodes = Object.values(STRUCTURE.graph[STRUCTURE["initial"]]).map (val) -> val[1]
-    final_nodes = (([1.._.size(STRUCTURE.graph)]).filter (x) -> _.isEmpty(STRUCTURE.graph[x])).map(String)
+    getScarcityTrials = (numRewarded, numUnrewarded) ->
+      console.log "Getting scarcity trials" + numRewarded + " " + numUnrewarded
+      shuffledTrials = _.shuffle TRIALS
+      console.log "shuffled Trials length: " + shuffledTrials.length
+      rewardedTrials = shuffledTrials.slice(0, numRewarded)
+      unrewardedTrials = shuffledTrials.slice(numRewarded, numRewarded + numUnrewarded)
+      for trial, idx in rewardedTrials
+        trial["withholdReward"] = false
+      for trial, idx in unrewardedTrials
+        trial["withholdReward"] = true
 
-    getCost = (node_label) ->
-      if node_label in early_nodes
-        return COST + DEPTH * 1
-      if node_label in final_nodes
-        return COST + DEPTH * 3
-      return COST + DEPTH * 2
+      trialsJoined = rewardedTrials.concat(unrewardedTrials)
+      console.log trialsJoined.length
+      console.log trialsJoined[0]
+      return _.shuffle trialsJoined
 
-    getClickCosts = () ->
-      click_costs =  [1,1,1,1,1,1,1,1,1,1,1,1,1]
-      depths = [0,0,1,2,2,0,1,2,2,0,1,2,2]
-      DEPTH * depths[idx] + COST * click for click, idx in click_costs
-
-    getColor = (node_label) ->
-      if (node_label in early_nodes) or (DEPTH == 0)
-        return PARAMS.colors[0]
-      if node_label in final_nodes
-        return PARAMS.colors[2]
-      return PARAMS.colors[1]
-
-    colorInterpolation  = (start, end) ->
-      max_color = Math.max getClickCosts()...
-      final_color = [187,187,187]
-      starting_color = [101,67,33]
-      pctg = if (start == end) then 1 else ((max_color-(end-start))/(max_color))*.70
-
-      r_channel = starting_color[0] + pctg * (final_color[0]-starting_color[0])
-      g_channel = starting_color[1] + pctg * (final_color[1]-starting_color[1])
-      b_channel = starting_color[2] + pctg * (final_color[2]-starting_color[2])
-
-      return "rgba(#{r_channel},#{g_channel},#{b_channel})"
+    getDistractorTrials = (num) ->
+      # Update this to return stroop trials
+      return getTrials num
 
     getTrials = do ->
       t = _.shuffle TRIALS
@@ -198,13 +193,13 @@ $(window).on 'load', ->
       t.slice(idx-n, idx)
 
     if TALK
-      createStartButton
+      createStartButton()
       clearTimeout loadTimeout
     else
       saveData()
         .then ->
           clearTimeout loadTimeout
-          delay 500, createStartButton
+          delay 500, createStartButton()
         .catch ->
           clearTimeout loadTimeout
           $('#data-error').show()
@@ -215,7 +210,7 @@ createQuestionnaires = (quest_id, quest_data) ->
                 (quest_data["questions"].map (question) -> question.labels.reduce sum_fn, 0)...
   horizontal = (length_of_options<65)
 
-  questionnaire_trial = {
+  questionnaire_trial =
     type: jsPsychSurveyLikert
     randomize_question_order: false
     preamble: quest_data["preamble"]
@@ -225,7 +220,7 @@ createQuestionnaires = (quest_id, quest_data) ->
       reverse_coded: quest_data["questions"].map (question) -> question['reverse_coded']
       question_id: quest_data["questions"].map (question) -> question['question_id']
     }
-  }
+
 bonus_text = (long) ->
     # if PARAMS.bonusRate isnt .01
     #   throw new Error('Incorrect bonus rate')
@@ -248,26 +243,41 @@ initializeExperiment = ->
   #  ========= EXPERIMENT ========= #
   #  ============================== #
 
-  instructions = {
+  no_distractor = {}
+  distractor = {}
+
+  no_distractor["experiment_instructions"] = {
     type: jsPsychInstructions
     on_start: () ->
       psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
     show_clickable_nav: true
     pages: -> [
-         """
+      """
         <h1> Instructions </h1>
 
-        In this HIT, you will play #{NUM_TRIALS} rounds of the <em>Web of Cash</em> game.  First you will be given the instructions and answer some questions to check your understanding of the game. The whole HIT will take about 30 minutes.
+        In this HIT, you will play #{NUM_MDP_TRIALS} rounds of the <em>Web of Cash</em> game.
+        <br> <br>
+
+        First you will be given the instructions and answer some questions to check your understanding of the game. The whole HIT will take about 35 minutes.
 
         The better you perform, the higher your bonus will be.
 
       """
+    ]
+  }
+  mouselab_instructions = {
+    type: jsPsychInstructions
+    on_start: () ->
+      psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
+    show_clickable_nav: true
+    pages: -> [
 
          """
         <h1>The Spider Web</h1>
 
-        In the <em>Web of Cash</em> game you will guide a money-loving spider through a spider web. When you land on a gray circle
-        (a <strong><em>node</strong></em>) the value of the node is added to your score.
+        In the <em>Web of Cash</em> game you will guide a money-loving spider through a spider web. Your goal is to travel from the start of the web to the end of the web in three moves. On your way from start to finish, you will pass through the <em>nodes</em> (gray circles) of the spider web.
+
+        Each of these nodes has a certain value, and the values of the nodes that you pass through from start to finish contribute to your score for that round. Your objective on each round is to get the highest score possible. The cumulative final score over all the rounds will be your final score at the end of the game. The higher your final score at the end of the game the higher your HIT bonus will be.
 
         You will be able to move the spider with the arrow keys, but only in the direction
         of the arrows between the nodes. The image below shows the shape of all the webs that you will be navigating in when the game starts.
@@ -279,30 +289,16 @@ initializeExperiment = ->
          """
         <h1> <em>Web of Cash</em> Node Inspector (1/2) </h1>
 
-        It's hard to make good decision when you can't see what you will get!
-        Fortunately, in the <em>Web of Cash</em> game you will have access to a <strong><em>node inspector</strong></em> which can reveal
-        the value of a node. To use the node inspector, you must <strong><em>click on a node</strong></em>. The image below illustrates how this works.
+        It's hard to make a good decision when you can't see what you will get!
+        Fortunately, in the <em>Web of Cash</em> game you will have access to a <strong><em>node inspector</em></strong> which can reveal
+        the value of a node. To use the node inspector, you must <strong><em>click on a node</em></strong>. The image below illustrates how this works.
+        <br>
+        The node inspector always costs $#{COST_FORMATTED} to reveal one node. The $#{COST_FORMATTED} fee will be instantly deducted from the spider's money (your score) for that round.
         <br>
         <strong>Note:</strong> you can only use the node inspector when you're on the starting
-        node.
+        node. Once you start moving, you can no longer inspect any nodes.
 
         <img class='display' style="width:50%; height:auto" src='static/images/web-of-cash.png'/>
-
-
-      """
-
-       """
-      <h1> <em>Web of Cash</em> Node Inspector (2/2) </h1>
-
-      The node inspector always costs $1 to reveal one node. The $1 fee will be instantly deducted from the spider's money (the score) in the top right corner.
-      <br>
-      <br>
-      There's one catch! The spider web tends to get a bit sticky. You may have to click multiple times to clean a node before using the node inspector to find the node's value. A node's color will go from brown to grey as it gets cleaner and closer to being revealed. When you hover over a node, a blue number will appear showing the number of clicks still needed (see the image below.) When a node's color matches the color of its grey border, it is ready to be inspected. The node inspector fee will be charged <strong>only on the final click as the node is revealed</strong> (i.e. <strong>there is no cost for clicking on a node to clean it.</strong>)
-      <br>
-      <br>
-      Some nodes are harder to uncover than others, <strong>for example you may need to click 5 times for one node vs. 50 times for another.</strong>
-
-      <img class='display' style="width:50%; height:auto" src='static/images/sticky_nodes.png'/>
 
 
     """
@@ -310,7 +306,10 @@ initializeExperiment = ->
         <h1> Rewards and Costs (2/2) </h1>
         <div style="text-align: left">
         <li>Each node of the web either contains a reward of up to <strong><font color='green'>$48</font></strong> or a loss of up to <strong><font color='red'>$-48</font></strong></li>
-        <li>You can find out about a node's loss or reward by using the node inspector, which costs <strong>$1 per revealed node.</strong></li>
+        <li>You can find out about a node's loss or reward by using the node inspector, which costs <strong>$#{COST_FORMATTED} per revealed node.</strong></li>
+        <li>At the end of the round, you will be told what your score for that round is.</li>
+        <li>But there's a catch! The spider, being very focused on collecting the money, sometimes forgets to count how much money it has collected. If the spider forgets to count on a round, <strong>you will not be told what your score for that round is</strong>. Since the spider collects the money nonetheless, <strong>your score for that round will still contribute to your final score for the game</strong>, when all the collected money is counted at the end.</li>
+
         </div>
 
 
@@ -347,8 +346,103 @@ initializeExperiment = ->
       ]
     }
 
+  distractor["experiment_instructions"] = {
+    type: jsPsychInstructions
+    show_clickable_nav: true
+    pages: -> [
+      """
+        <h1> Instructions </h1>
+
+        In this HIT, you will play multiple rounds of two different games.
+
+        <br><br>
+        First, you will play #{NUM_DISTRACTOR_TRIALS_1} rounds of the <em>Color Word</em> game. After these, you will play #{NUM_MDP_TRIALS} rounds of the <em>Web of Cash</em> game. Finally, you will play another #{NUM_DISTRACTOR_TRIALS_2} rounds of the same Color Word game.
+
+        <br><br>
+        Before each game, you will be given instructions on how to play the game. You may also have to answer some questions to check your understanding of the game.
+
+        <br><br>
+        The better you perform on these games, the higher your bonus will be. The whole HIT will last around 35 minutes.
+
+      """
+    ]
+  }
+
+  distractor["color_game_instructions"] = {
+    type: jsPsychInstructions
+    show_clickable_nav: true
+    pages: -> [
+      """
+        <h1> Instructions for Color-Word Game</h1>
+
+        In this game, you will be shown a word on the screen whose letters have a certain color.
+
+        <br><br>
+
+        Your task is simply to <strong>report the color of the text as fast as possible</strong>.
+
+        <br><br>
+        You will complete #{NUM_DISTRACTOR_TRIALS_1} rounds of this game before moving on to the next game.
+
+        <br><br>
+        Click 'Next' when you are ready to start!
+
+      """
+    ]
+  }
+
+  distractor["color_game_ready"] = {
+    type: jsPsychHtmlKeyboardResponse
+    choices: [" "]
+    stimulus: """
+        <h1> Get ready to start the game! </h1>
+
+        Thank you for reading the instructions.
+
+        Remember, the better you perform, the bigger your bonus will be!
+
+        <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+        """
+  }
+
+  distractor["finish_distractor"] = {
+    type: jsPsychInstructions
+    show_clickable_nav: true
+    pages: -> [
+      """
+        <h1> End of First Set of Color-Word Game </h1>
+
+        Congratulations on making it to the end of the Color-Word game!
+
+        We will now begin with the next game, <em>Web of Cash</em>.
+
+        Click 'Continue' when you are ready to proceed to the instructions of the next game.
+
+      """
+    ]
+  }
+
+  distractor["finish_webofcash"] = {
+    type: jsPsychInstructions
+    show_clickable_nav: true
+    pages: -> [
+      """
+        <h1> End of First Web of Cash Game </h1>
+
+        Congratulations on making it to the end of the Web of Cash game!
+
+        We will now begin with the next game, which is another set of rounds of the <em>Color-Word Game</em>.
+
+        The instructions will be briefly shown to you again, to remind you of what the game entails.
+
+        Click 'Continue' when you are ready to proceed.
+
+      """
+    ]
+  }
+
   #instructions quiz -- they have limited tries (MAX_REPETITIONS) here
-  quiz = {
+  mouselab_quiz = {
     preamble: ->  """
       <h1> Quiz </h1>
 
@@ -374,10 +468,8 @@ initializeExperiment = ->
     }
   }
 
-
-
-  instruct_loop = {
-    timeline: [instructions, quiz]
+  mouselab_instruct_loop =
+    timeline: [mouselab_instructions, mouselab_quiz]
     conditional_function: ->
       if DEBUG
         return false
@@ -393,8 +485,6 @@ initializeExperiment = ->
             return true  # try again
       psiturk.saveData()
       return false
-    }
-
 
   additional_base = {
     type: jsPsychHtmlKeyboardResponse
@@ -404,18 +494,17 @@ initializeExperiment = ->
 
         Thank you for reading the instructions.
 
-        We will give the spider $#{SCORE} to start. Remember, the more money the spider gets, the bigger your bonus will be!  Concretely, #{bonus_text('long')}
+        Remember, the more money the spider gets, the bigger your bonus will be!  Concretely, #{bonus_text('long')}
 
         <div style='text-align: center;'>Press <code>space</code> to begin.</div>
         """
     }
 
-
-  final_quiz = {
+  no_distractor["final_quiz"] = {
     preamble: -> """
       <h1>Quiz</h1>
 
-      Based on your performance, you will be awarded a total bonus of <strong>$#{calculateBonus().toFixed(2)}</strong>. Please answer the following questions about the task before moving onto the questionnaires.
+      Based on your performance, you will be awarded a total bonus of <strong>$#{calculateBonus().toFixed(2)}</strong>. Please answer the following questions about the task before moving on to the questionnaires.
 
     """
     type: jsPsychSurveyMultiChoice
@@ -430,72 +519,85 @@ initializeExperiment = ->
     ]
     }
 
-  click_costs = getClickCosts()
+  distractor["final_quiz"] = {
+    preamble: -> """
+      <h1>Quiz</h1>
 
-  # typical 30 test trials, with extra cost component
+      Based on your performance, you will be awarded a total bonus of <strong>$#{calculateBonus().toFixed(2)}</strong>. Please answer the following questions about the task before moving on to the final game.
+
+    """
+    type: jsPsychSurveyMultiChoice
+    on_finish: ->
+      BONUS = calculateBonus().toFixed(2)
+    questions: [
+      {prompt: "What is the range of node values in the first step (closest to the start, in the center)?", options: ['$-4 to $4', '$-8 to $8', '$-48 to $48'], required: true}
+      {prompt: "What is the range of node values in the middle?", options: ['$-4 to $4', '$-8 to $8', '$-48 to $48'], required: true}
+      {prompt: "What is the range of node values in the last step (furthest from the start, the edges)?", options: ['$-4 to $4', '$-8 to $8', '$-48 to $48'], required: true}
+      {prompt: COST_QUESTION, options: COST_ANSWERS, required: true}
+      {prompt: "How motivated were you to perform the task?", options: ["Very unmotivated", "Slightly unmotivated", "Neither motivated nor unmotivated", "Slightly motivated", "Very motivated"], required: true}
+    ]
+  }
+
+  dist_1_stimulus = []
+
+  for i in [1...NUM_DISTRACTOR_TRIALS_1+1]
+    console.log i
+    dist_1_stimulus.push({
+      stimulus: "This is distractor trial #{i}/#{NUM_DISTRACTOR_TRIALS_1}. Press any key to continue."
+    })
+  console.log dist_1_stimulus
+  dist_2_stimulus = []
+  for i in [1...NUM_DISTRACTOR_TRIALS_2+1]
+    console.log i
+    dist_2_stimulus.push({
+      stimulus: "This is distractor trial #{i}/#{NUM_DISTRACTOR_TRIALS_2}. Press any key to continue."
+    })
+  console.log dist_2_stimulus
+  distractor["distractor_trials_1"] =
+    type: jsPsychHtmlKeyboardResponse,
+    trialId : "distractor_1_#{distTrialCount1}"
+    timeline: dist_1_stimulus
+    on_finish: () ->
+      distTrialCount1 += 1
+
+  distractor["distractor_trials_2"] =
+    type: jsPsychHtmlKeyboardResponse,
+    trialId : "distractor_2_#{distTrialCount2}"
+    timeline: dist_2_stimulus
+    on_finish: () ->
+      distTrialCount2 += 1
+
+  # All scarcity trials
   test = {
     type: jsPsychMouselabMDP
     # display: $('#jspsych-target')
     graph: STRUCTURE.graph
     layout: STRUCTURE.layout
     initial: STRUCTURE.initial
-    num_trials: NUM_TRIALS
-    stateClickCost: () -> 1
-    # stateRewards: jsPsych.timelineVariable('stateRewards',true)
+    num_trials: NUM_MDP_TRIALS
+    stateClickCost: () -> COST
     stateDisplay: 'click'
     withholdReward: true
     accumulateReward: true
     wait_for_click: true
+    minTime: DEBUG ? undefined : 7
     stateBorder : () -> "rgb(187,187,187,1)"#getColor
-    colorInterpolation: colorInterpolation
     playerImage: 'static/images/spider.png'
     # trial_id: jsPsych.timelineVariable('trial_id',true)
     blockName: 'test'
     lowerMessage: """
       Click on the nodes to reveal their values.<br>
-      Move with the arrow keys.
-      <br><br>
-      #{COST_EXPLANATION}
+      Move with the arrow keys after you are done clicking.
         """
-    timeline: getTrials NUM_TEST_TRIALS
+    timeline: getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
     trialCount: () -> trialCount
     on_finish: () ->
       trialCount += 1
   }
 
-  # test to see if participants stay biased
-  bias_test = {
-    type: jsPsychMouselabMDP
-    # display: $('#jspsych-target')
-    graph: STRUCTURE.graph
-    layout: STRUCTURE.layout
-    initial: STRUCTURE.initial
-    num_trials: NUM_TRIALS
-    stateClickCost: () -> 1
-    num_clicks_needed: [0,0,0,0,0,0,0,0,0,0,0,0,0]
-    # stateRewards: jsPsych.timelineVariable('stateRewards',true)
-    stateDisplay: 'click'
-    wait_for_click: true
-    accumulateReward: false
-    stateBorder : () -> "rgb(187,187,187,1)"#getColor
-    colorInterpolation: colorInterpolation
-    playerImage: 'static/images/spider.png'
-    # trial_id: jsPsych.timelineVariable('trial_id',true)
-    blockName: 'bias_test'
-    lowerMessage: """
-      Click on the nodes to reveal their values.<br>
-      Move with the arrow keys.
-      <br><br>
-      #{COST_EXPLANATION}
-        """
-    timeline: getTrials NUM_BIAS_TRIALS
-    trialCount: () -> trialCount
-    on_finish: () ->
-      trialCount += 1
-  }
-
+  console.log "Trials created"
   #final screen if participants didn't pass instructions quiz
-  finish_fail = {
+  no_distractor["finish_fail"] = {
        type: jsPsychSurveyText
        preamble: ->  """
            <h1> You've completed the HIT </h1>
@@ -517,6 +619,28 @@ initializeExperiment = ->
        button_label: 'Continue on to secret code'
      }
 
+  distractor["finish_fail"] = {
+    type: jsPsychSurveyText
+    preamble: ->  """
+           <h1> You've completed the HIT </h1>
+
+           Thanks for participating. Unfortunately we can only allow those who understand the instructions to continue with the HIT.
+
+           You will receive only the base pay amount and the bonus for the first game when you submit.
+
+           Before you submit the HIT, we are interested in knowing some demographic info, and if possible, what problems you encountered with the instructions/HIT.
+         """
+
+    questions: [
+      {prompt:'Was anything confusing or hard to understand?',required:false,rows:10}
+      {prompt:'What is your age?',required:true}
+      {prompt:'What is your gender?',required:true}
+      {prompt:'Are you colorblind?',required:true, rows:2}
+      {prompt:'Additional comments?',required:false,rows:10}
+    ]
+    button_label: 'Continue on to secret code'
+  }
+
   #final screen, if participants actually participated
   finish = {
     type: jsPsychSurveyText
@@ -524,7 +648,7 @@ initializeExperiment = ->
         <h1> You've completed the HIT </h1>
 
         Thanks for participating. We hope you had fun! Based on your
-        performance, you will be awarded a bonus of
+        performance in all the games, you will be awarded a bonus of
         <strong>$#{BONUS}</strong>.
 
         Please briefly answer the questions below before you submit the HIT.
@@ -578,43 +702,84 @@ initializeExperiment = ->
   # ================================================ #
 
   #if the subject fails the quiz 4 times they are just thanked and must leave
-  if_node1 = {
-    timeline: [finish_fail]
+  no_distractor["if_node1"] =
+    timeline: [no_distractor["finish_fail"]]
     conditional_function: ->
         if REPETITIONS > MAX_REPETITIONS
             return true
         else
             return false
-    }
+
+  distractor["if_node1"] =
+    timeline: [distractor["finish_fail"]]
+    conditional_function: ->
+      if REPETITIONS > MAX_REPETITIONS
+        return true
+      else
+        return false
+
 
   # if the subject passes the quiz, they continue and can earn a bonus for their performance
-  if_node2 = {
-    timeline: [additional_base, test, bias_test, final_quiz, createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
+  no_distractor["if_node2"] =
+    timeline: [additional_base, test, no_distractor["final_quiz"], createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || DEBUG
         return false
       else
         return true
-    }
 
-  if_node2_debug = {
-    timeline: [additional_base, test, bias_test, finish]
+  no_distractor["if_node2_debug"] =
+    timeline: [additional_base, test, no_distractor["final_quiz"], finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || !DEBUG
         return false
       else
         return true
-  }
+
+  distractor["if_node2"] =
+    timeline: [additional_base, test, distractor["final_quiz"], distractor["finish_webofcash"],
+      distractor["color_game_instructions"], distractor["distractor_trials_2"],
+      createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
+    conditional_function: ->
+      if REPETITIONS > MAX_REPETITIONS || DEBUG
+        return false
+      else
+        return true
+
+  distractor["if_node2_debug"] =
+    timeline: [additional_base, test, distractor["final_quiz"], distractor["finish_webofcash"],
+      distractor["color_game_instructions"], distractor["distractor_trials_2"],
+       finish]
+    conditional_function: ->
+      if REPETITIONS > MAX_REPETITIONS || !DEBUG
+        return false
+      else
+        return true
+
 
   # experiment timeline up until now (conditional function properties of nodes keep if_node1 and if_node2 working as we want them)
-  experiment_timeline = [
-    additional_base
-    instruct_loop
-    if_node1
-    if_node2
-    if_node2_debug
-  ]
 
+  experiment_timeline = undefined
+  if NUM_DISTRACTOR_TRIALS > 0
+    experiment_timeline = [
+      distractor["experiment_instructions"],
+      distractor["color_game_instructions"],
+      distractor["distractor_trials_1"],
+      distractor["finish_distractor"],
+      mouselab_instruct_loop
+      distractor["if_node1"],
+      distractor["if_node2"],
+      distractor["if_node2_debug"]
+    ]
+  else
+    experiment_timeline = [
+      no_distractor["experiment_instructions"],
+      mouselab_instruct_loop,
+      no_distractor["if_node1"],
+      no_distractor["if_node2"],
+      no_distractor["if_node2_debug"]
+    ]
+  console.log "Experiment timeline exists: " + !!experiment_timeline
   # ================================================ #
   # ========= START AND END THE EXPERIMENT ========= #
   # ================================================ #
@@ -666,4 +831,5 @@ initializeExperiment = ->
       save_data()
 
   # initialize jspsych experiment -- without this nothing happens
+  console.log "Running jsPsych"
   jsPsych.run(experiment_timeline)
