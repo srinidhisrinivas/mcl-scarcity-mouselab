@@ -120,6 +120,8 @@ class MouselabMDP
       @startScore=0
       @no_add = false
 
+      @scoreShift=0
+
       @actions=null
       @demoStates=null
       @clicks=null
@@ -198,6 +200,7 @@ class MouselabMDP
       revealed_states: @revealed_states
       num_clicks_accrued: @num_clicks_accrued
       stateRewards: @stateRewards
+      withholdReward: @withholdReward
       trial_id: trial_id
       block: blockName
       trialIndex: @trialIndex
@@ -752,21 +755,24 @@ class MouselabMDP
     if @blockOver and !@displayTime
       return
 
+    @data.score += @scoreShift
+
     # Add reward to total score at the end and then display if needed
     if @accumulateReward
-      SCORE += @data.score
       if !@withholdReward
+        SCORE += @data.score
         @drawScore(@data.score.toFixed(2));
       else
+        SCORE += @data.costs
         $('#mouselab-score').html ('?')
         $('#mouselab-score').css 'color', redGreen 0
 
-    console.log("Score: " + SCORE)
+
     htmlMessage = undefined
 
     if @withholdReward
       htmlMessage = """
-        The spider forgot to take note of the collected values this round!<br>The obtained score will still be added to your total.
+        The spider forgot to count the money on this round!
         """
     else
       htmlMessage = """
