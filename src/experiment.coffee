@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = yes
+DEBUG = no
 DEBUG_SUBMIT = no
 TALK = no
 
@@ -12,7 +12,6 @@ if DEBUG
   """
   CONDITION = parseInt condition
   console.log condition
-  CONDITION = 4
 
 else
   console.log """
@@ -20,9 +19,8 @@ else
   # ========= NORMAL MODE ========= #
   # =============================== #
   """
-  console.log '16/01/18 12:38:03 PM'
   CONDITION = parseInt condition
-  CONDITION = 5
+  console.log condition
 
 if mode is "{{ mode }}"
 
@@ -52,9 +50,13 @@ SCORE = [0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- 
 BONUS_RATE = .002
 
 if DEBUG
-  NUM_TEST_TRIALS = 5
+  NUM_TEST_TRIALS = 10
 else
   NUM_TEST_TRIALS = 30
+
+# v0.1 - 6 trials only with 60% scarcity
+NUM_TEST_TRIALS = 6
+REWARDED_PROP = 0.6
 
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
@@ -64,10 +66,10 @@ NUM_DISTRACTOR_TRIALS_1 = Math.floor NUM_DISTRACTOR_TRIALS / 2
 NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 
 # Convert MDP trials to stroop trials
-MDP_TO_STROOP_CONVERSION = 5
+MDP_TO_STROOP_CONVERSION = 7
 MAX_BLOCK_LENGTH = 100
 if DEBUG
-  MAX_BLOCK_LENGTH = 3
+  MAX_BLOCK_LENGTH = 10
 
 NUM_DISTRACTOR_TRIALS_1 *= MDP_TO_STROOP_CONVERSION
 NUM_BLOCKS_1 = Math.ceil NUM_DISTRACTOR_TRIALS_1 / MAX_BLOCK_LENGTH
@@ -174,7 +176,6 @@ $(window).on 'load', ->
 
     getPracticeTrials = (numTrials) ->
       templateTrial = TRIALS[0]["stateRewards"]
-      console.log(templateTrial)
       trials = []
       for i in [0...numTrials]
         trialObj = {}
@@ -198,8 +199,6 @@ $(window).on 'load', ->
         trial["withholdReward"] = true
 
       trialsJoined = rewardedTrials.concat(unrewardedTrials)
-      console.log trialsJoined.length
-      console.log trialsJoined[0]
       return _.shuffle trialsJoined
 
     getStroopTrials = (num) ->
@@ -605,14 +604,11 @@ initializeExperiment = ->
     ]
   }
 
-  console.log "Herre 1"
   # Stroop block structure of first set of distractor trials
   distractor["distractor_1_timeline"] = []
   for numBlockTrials, idx in STROOP_BLOCKS_1
-    console.log numBlockTrials + ": " + idx
     ready_screen = undefined
     if idx == 0
-      console.log("Iddx 0")
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
         choices: [" "]
@@ -627,7 +623,6 @@ initializeExperiment = ->
           <br><br>
           <div style='text-align: center;'>Press <code>space</code> to begin.</div>
         """
-      console.log("Done with ready screen")
     else
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
@@ -645,7 +640,6 @@ initializeExperiment = ->
         """
 
     distractor["distractor_1_timeline"].push ready_screen
-    console.log "Ready screen done and appended"
     stroop_trials =
       type: jsPsychHtmlKeyboardResponse,
       on_timeline_start: ->
@@ -672,9 +666,7 @@ initializeExperiment = ->
           $('#wrong').show()
 
     distractor["distractor_1_timeline"].push stroop_trials
-    console.log "Stroop done and appended"
 
-  console.log "Herre 2"
   # Stroop block structure of second set of distractor trials
   distractor["distractor_2_timeline"] = []
   for numBlockTrials, idx in STROOP_BLOCKS_2
@@ -737,7 +729,6 @@ initializeExperiment = ->
           $('#wrong').show()
     distractor["distractor_2_timeline"].push stroop_trials
 
-  console.log "Herre 3"
 #  distractor["color_game_ready"] = {
 #    type: jsPsychHtmlKeyboardResponse
 #    choices: [" "]
@@ -852,8 +843,6 @@ initializeExperiment = ->
       responses = data.last(1).values()[0].response
       for resp_id, response of responses
         if not (data.last(1).values()[0].correct[resp_id] == response)
-          console.log(data.last(1).values()[0].correct[resp_id])
-          console.log(response)
           REPETITIONS += 1
           if REPETITIONS < MAX_REPETITIONS
             alert """You got at least one question wrong. We'll send you back to the instructions and then you can try again. Number of attempts left: #{MAX_REPETITIONS-REPETITIONS}."""
@@ -872,8 +861,6 @@ initializeExperiment = ->
       responses = data.last(1).values()[0].response
       for resp_id, response of responses
         if not (data.last(1).values()[0].correct[resp_id] == response)
-          console.log(data.last(1).values()[0].correct[resp_id])
-          console.log(response)
           REPETITIONS += 1
           if REPETITIONS < MAX_REPETITIONS
             alert """You got at least one question wrong. We'll send you back to the instructions and then you can try again. Number of attempts left: #{MAX_REPETITIONS-REPETITIONS}."""
@@ -891,7 +878,7 @@ initializeExperiment = ->
         <br><br>
         Remember, the more money the spider gets, the bigger your bonus will be!
         <br><br>
-        If you need a short break, feel free to take one at any point after you have finished a round. When you are finished with your break, just come back and press <code>space</code> to continue to the next trial as normal.
+        If you need a short break, feel free to take one at any point after you have finished a round. When you are finished with your break, just come back and press <code>space</code> to continue to the next round as normal.
         <br><br>
         <div style='text-align: center;'>Press <code>space</code> to begin.</div>
         """
@@ -939,77 +926,10 @@ initializeExperiment = ->
       {prompt: "How motivated were you to perform the task?", options: ["Very unmotivated", "Slightly unmotivated", "Neither motivated nor unmotivated", "Slightly motivated", "Very motivated"], required: true}
     ]
 
-
-#  dist_1_stimulus = []
-#
-#  for i in [1...NUM_DISTRACTOR_TRIALS_1+1]
-#    console.log i
-#    dist_1_stimulus.push({
-#      stimulus: "This is distractor trial #{i}/#{NUM_DISTRACTOR_TRIALS_1}. Press any key to continue."
-#    })
-#  console.log dist_1_stimulus
-#  dist_2_stimulus = []
-#  for i in [1...NUM_DISTRACTOR_TRIALS_2+1]
-#    console.log i
-#    dist_2_stimulus.push({
-#      stimulus: "This is distractor trial #{i}/#{NUM_DISTRACTOR_TRIALS_2}. Press any key to continue."
-#    })
-#  console.log dist_2_stimulus
-#  distractor["distractor_trials_1"] =
-#    type: jsPsychHtmlKeyboardResponse,
-#    on_timeline_start: ->
-#      $('body').css('background-color', 'black')
-#      $('body').append("<p id='correct' class='stroop-correct'>CORRECT</p>")
-#      $('body').append("<p id='wrong' class='stroop-wrong'>INCORRECT</p>")
-#    on_timeline_finish: ->
-#      $('body').css('background-color', 'white')
-#      $('#correct').remove()
-#      $('#wrong').remove()
-#    on_load: ->
-#        $('#stroop-text').show()
-#        $('#correct').hide()
-#        $('#wrong').hide()
-#    post_trial_gap: 500
-#    choices: ["r", "g", "b", "y"]
-#    timeline: getStroopTrials NUM_DISTRACTOR_TRIALS_1
-#    css_classes: ['stroop-trial']
-#    on_finish: (data) ->
-#      $('#stroop-text').hide()
-#      if data.response.toLowerCase() == data.correct_response.toLowerCase()
-#        $('#correct').show()
-#      else
-#        $('#wrong').show()
-#
-#  distractor["distractor_trials_2"] =
-#    type: jsPsychHtmlKeyboardResponse,
-#    on_timeline_start: ->
-#      $('body').css('background-color', 'black')
-#      $('body').append("<p id='correct' class='stroop-correct'>CORRECT</p>")
-#      $('body').append("<p id='wrong' class='stroop-wrong'>INCORRECT</p>")
-#    on_timeline_finish: ->
-#      $('body').css('background-color', 'white')
-#      $('#correct').remove()
-#      $('#wrong').remove()
-#    on_load: ->
-#      $('#stroop-text').show()
-#      $('#correct').hide()
-#      $('#wrong').hide()
-#    post_trial_gap: 500
-#    choices: ["r", "g", "b", "y"]
-#    timeline: getStroopTrials NUM_DISTRACTOR_TRIALS_2
-#    css_classes: ['stroop-trial']
-#    on_finish: (data) ->
-#      $('#stroop-text').hide()
-#      if data.response.toLowerCase() == data.correct_response.toLowerCase()
-#        $('#correct').show()
-#      else
-#        $('#wrong').show()
-
   minimumTime = PARAMS.MIN_TIME
   if DEBUG
     minimumTime = null
 
-  console.log(minimumTime)
   # All scarcity trials
   test = {
     type: jsPsychMouselabMDP

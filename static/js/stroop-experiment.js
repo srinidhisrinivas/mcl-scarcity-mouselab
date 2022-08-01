@@ -1,6 +1,6 @@
 let DEBUG = true;
 
-let NUM_TRIALS = 15;
+let NUM_TRIALS = 30;
 
 let getStroopTrials = void 0;
 

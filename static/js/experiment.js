@@ -3,7 +3,7 @@
 var BLOCKS, BONUS, BONUS_RATE, CONDITION, COST, COST_ANSWERS, COST_CORRECT, COST_EXPLANATION, COST_FORMATTED, COST_QUESTION, DEBUG, DEBUG_SUBMIT, MAX_AMOUNT, MAX_BLOCK_LENGTH, MAX_REPETITIONS, MDP_TO_STROOP_CONVERSION, NUM_BLOCKS_1, NUM_BLOCKS_2, NUM_DISTRACTOR_TRIALS, NUM_DISTRACTOR_TRIALS_1, NUM_DISTRACTOR_TRIALS_2, NUM_MDP_TRIALS, NUM_TEST_TRIALS, NUM_TRIALS, NUM_TUTORIAL_TRIALS, NUM_UNREWARDED_TRIALS, N_TRIAL, PARAMS, QUESTIONNAIRES, REPETITIONS, REWARDED_PROP, REWARDED_PROPORTIONS, SCORE, STROOP_BLOCKS_1, STROOP_BLOCKS_2, STRUCTURE, TALK, TRIALS, bonus_text, calculateBonus, colorInterpolation, createQuestionnaires, createStartButton, distTrialCount1, distTrialCount2, early_nodes, final_nodes, getClickCosts, getColor, getCost, getDistractorTrials, getPracticeTrials, getRevealedTrials, getScarcityTrials, getStroopTrials, getTrials, initializeExperiment, jsPsych, pracTrialCount, psiturk, saveData, trialCount,
   modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
 
-DEBUG = true;
+DEBUG = false;
 
 DEBUG_SUBMIT = false;
 
@@ -15,14 +15,12 @@ if (DEBUG) {
 X X X X X X X X X X X X X X X X X`);
   CONDITION = parseInt(condition);
   console.log(condition);
-  CONDITION = 4;
 } else {
   console.log(`# =============================== #
 # ========= NORMAL MODE ========= #
 # =============================== #`);
-  console.log('16/01/18 12:38:03 PM');
   CONDITION = parseInt(condition);
-  CONDITION = 5;
+  console.log(condition);
 }
 
 if (mode === "{{ mode }}") {
@@ -69,7 +67,7 @@ SCORE = [0, 0, 0, 0, 0, 0][CONDITION];
 BONUS_RATE = .002;
 
 if (DEBUG) {
-  NUM_TEST_TRIALS = 5;
+  NUM_TEST_TRIALS = 10;
 } else {
   NUM_TEST_TRIALS = 30;
 }
@@ -92,7 +90,7 @@ MDP_TO_STROOP_CONVERSION = 5;
 MAX_BLOCK_LENGTH = 100;
 
 if (DEBUG) {
-  MAX_BLOCK_LENGTH = 3;
+  MAX_BLOCK_LENGTH = 10;
 }
 
 NUM_DISTRACTOR_TRIALS_1 *= MDP_TO_STROOP_CONVERSION;
@@ -235,7 +233,6 @@ $(window).on('load', function() {
     getPracticeTrials = function(numTrials) {
       var i, idx_2, j, k, len, ref, reward, templateTrial, trialObj, trials;
       templateTrial = TRIALS[0]["stateRewards"];
-      console.log(templateTrial);
       trials = [];
       for (i = j = 0, ref = numTrials; (0 <= ref ? j < ref : j > ref); i = 0 <= ref ? ++j : --j) {
         trialObj = {};
@@ -267,8 +264,6 @@ $(window).on('load', function() {
         trial["withholdReward"] = true;
       }
       trialsJoined = rewardedTrials.concat(unrewardedTrials);
-      console.log(trialsJoined.length);
-      console.log(trialsJoined[0]);
       return _.shuffle(trialsJoined);
     };
     getStroopTrials = function(num) {
@@ -680,15 +675,12 @@ Click 'Next' when you are ready to start!
       ];
     }
   };
-  console.log("Herre 1");
   // Stroop block structure of first set of distractor trials
   distractor["distractor_1_timeline"] = [];
   for (idx = j = 0, len = STROOP_BLOCKS_1.length; j < len; idx = ++j) {
     numBlockTrials = STROOP_BLOCKS_1[idx];
-    console.log(numBlockTrials + ": " + idx);
     ready_screen = void 0;
     if (idx === 0) {
-      console.log("Iddx 0");
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
         choices: [" "],
@@ -702,7 +694,6 @@ Remember, the better you perform, the bigger your bonus will be!
 <br><br>
 <div style='text-align: center;'>Press <code>space</code> to begin.</div>`
       };
-      console.log("Done with ready screen");
     } else {
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
@@ -719,7 +710,6 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
       };
     }
     distractor["distractor_1_timeline"].push(ready_screen);
-    console.log("Ready screen done and appended");
     stroop_trials = {
       type: jsPsychHtmlKeyboardResponse,
       on_timeline_start: function() {
@@ -751,9 +741,7 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
       }
     };
     distractor["distractor_1_timeline"].push(stroop_trials);
-    console.log("Stroop done and appended");
   }
-  console.log("Herre 2");
   // Stroop block structure of second set of distractor trials
   distractor["distractor_2_timeline"] = [];
   for (idx = k = 0, len1 = STROOP_BLOCKS_2.length; k < len1; idx = ++k) {
@@ -821,7 +809,6 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
     };
     distractor["distractor_2_timeline"].push(stroop_trials);
   }
-  console.log("Herre 3");
   //  distractor["color_game_ready"] = {
   //    type: jsPsychHtmlKeyboardResponse
   //    choices: [" "]
@@ -846,9 +833,9 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
         `<h1> End of First Set of Color-Word Game </h1>
 
 Congratulations on making it to the end of the Color-Word game!
-
+<br> <br>
 We will now begin with the next game, <em>Web of Cash</em>. If you would like to take a short break, you may take one now and continue to the next game when you are ready.
-
+<br> <br>
 Click 'Next' when you are ready to proceed to the instructions of the next game.
 `
       ];
@@ -1005,8 +992,6 @@ Click 'Next' when you are ready to proceed.
       for (resp_id in responses) {
         response = responses[resp_id];
         if (!(data.last(1).values()[0].correct[resp_id] === response)) {
-          console.log(data.last(1).values()[0].correct[resp_id]);
-          console.log(response);
           REPETITIONS += 1;
           if (REPETITIONS < MAX_REPETITIONS) {
             alert(`You got at least one question wrong. We'll send you back to the instructions and then you can try again. Number of attempts left: ${MAX_REPETITIONS - REPETITIONS}.`);
@@ -1033,8 +1018,6 @@ Click 'Next' when you are ready to proceed.
       for (resp_id in responses) {
         response = responses[resp_id];
         if (!(data.last(1).values()[0].correct[resp_id] === response)) {
-          console.log(data.last(1).values()[0].correct[resp_id]);
-          console.log(response);
           REPETITIONS += 1;
           if (REPETITIONS < MAX_REPETITIONS) {
             alert(`You got at least one question wrong. We'll send you back to the instructions and then you can try again. Number of attempts left: ${MAX_REPETITIONS - REPETITIONS}.`);
@@ -1055,7 +1038,7 @@ Thank you for reading the instructions. We will now start with the rounds of the
 <br><br>
 Remember, the more money the spider gets, the bigger your bonus will be!
 <br><br>
-If you need a short break, feel free to take one at any point after you have finished a round. When you are finished with your break, just come back and press <code>space</code> to continue to the next trial as normal.
+If you need a short break, feel free to take one at any point after you have finished a round. When you are finished with your break, just come back and press <code>space</code> to continue to the next round as normal.
 <br><br>
 <div style='text-align: center;'>Press <code>space</code> to begin.</div>`
   };
@@ -1162,75 +1145,10 @@ Your total score for the game was $${SCORE}. The bonus that you receive at the e
       }
     ]
   };
-  //  dist_1_stimulus = []
-
-  //  for i in [1...NUM_DISTRACTOR_TRIALS_1+1]
-  //    console.log i
-  //    dist_1_stimulus.push({
-  //      stimulus: "This is distractor trial #{i}/#{NUM_DISTRACTOR_TRIALS_1}. Press any key to continue."
-  //    })
-  //  console.log dist_1_stimulus
-  //  dist_2_stimulus = []
-  //  for i in [1...NUM_DISTRACTOR_TRIALS_2+1]
-  //    console.log i
-  //    dist_2_stimulus.push({
-  //      stimulus: "This is distractor trial #{i}/#{NUM_DISTRACTOR_TRIALS_2}. Press any key to continue."
-  //    })
-  //  console.log dist_2_stimulus
-  //  distractor["distractor_trials_1"] =
-  //    type: jsPsychHtmlKeyboardResponse,
-  //    on_timeline_start: ->
-  //      $('body').css('background-color', 'black')
-  //      $('body').append("<p id='correct' class='stroop-correct'>CORRECT</p>")
-  //      $('body').append("<p id='wrong' class='stroop-wrong'>INCORRECT</p>")
-  //    on_timeline_finish: ->
-  //      $('body').css('background-color', 'white')
-  //      $('#correct').remove()
-  //      $('#wrong').remove()
-  //    on_load: ->
-  //        $('#stroop-text').show()
-  //        $('#correct').hide()
-  //        $('#wrong').hide()
-  //    post_trial_gap: 500
-  //    choices: ["r", "g", "b", "y"]
-  //    timeline: getStroopTrials NUM_DISTRACTOR_TRIALS_1
-  //    css_classes: ['stroop-trial']
-  //    on_finish: (data) ->
-  //      $('#stroop-text').hide()
-  //      if data.response.toLowerCase() == data.correct_response.toLowerCase()
-  //        $('#correct').show()
-  //      else
-  //        $('#wrong').show()
-
-  //  distractor["distractor_trials_2"] =
-  //    type: jsPsychHtmlKeyboardResponse,
-  //    on_timeline_start: ->
-  //      $('body').css('background-color', 'black')
-  //      $('body').append("<p id='correct' class='stroop-correct'>CORRECT</p>")
-  //      $('body').append("<p id='wrong' class='stroop-wrong'>INCORRECT</p>")
-  //    on_timeline_finish: ->
-  //      $('body').css('background-color', 'white')
-  //      $('#correct').remove()
-  //      $('#wrong').remove()
-  //    on_load: ->
-  //      $('#stroop-text').show()
-  //      $('#correct').hide()
-  //      $('#wrong').hide()
-  //    post_trial_gap: 500
-  //    choices: ["r", "g", "b", "y"]
-  //    timeline: getStroopTrials NUM_DISTRACTOR_TRIALS_2
-  //    css_classes: ['stroop-trial']
-  //    on_finish: (data) ->
-  //      $('#stroop-text').hide()
-  //      if data.response.toLowerCase() == data.correct_response.toLowerCase()
-  //        $('#correct').show()
-  //      else
-  //        $('#wrong').show()
   minimumTime = PARAMS.MIN_TIME;
   if (DEBUG) {
     minimumTime = null;
   }
-  console.log(minimumTime);
   // All scarcity trials
   test = {
     type: jsPsychMouselabMDP,
