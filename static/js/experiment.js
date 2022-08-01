@@ -158,14 +158,14 @@ jsPsych = initJsPsych({
     if (DEBUG && !DEBUG_SUBMIT) {
       return jsPsych.data.displayData();
     } else {
-      psiturk.recordUnstructuredData('final_bonus', calculateBonus());
-      psiturk.recordUnstructuredData('displayed_bonus', BONUS);
+      psiturk.recordUnstructuredData('final_score', SCORE);
       return save_data();
     }
   },
   on_data_update: function(data) {
     // console.log 'data', data
     psiturk.recordTrialData(data);
+    console.log("Updating data saved");
     return psiturk.saveData();
   }
 });
@@ -1351,8 +1351,9 @@ Please briefly answer the questions below before you submit the HIT.`;
     }
   };
   // if the subject passes the quiz, they continue and can earn a bonus for their performance
+  // createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"])
   no_distractor["if_node2"] = {
-    timeline: [additional_base, test, no_distractor["final_quiz"], createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish],
+    timeline: [additional_base, test, no_distractor["final_quiz"], demographics, finish],
     conditional_function: function() {
       if (REPETITIONS > MAX_REPETITIONS || DEBUG) {
         return false;
@@ -1372,7 +1373,7 @@ Please briefly answer the questions below before you submit the HIT.`;
     }
   };
   distractor["if_node2"] = {
-    timeline: [additional_base, test, distractor["finish_webofcash"], distractor["color_game_instructions"], ...distractor["distractor_2_timeline"], createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish],
+    timeline: [additional_base, test, distractor['final_quiz'], distractor["finish_webofcash"], distractor["color_game_instructions"], ...distractor["distractor_2_timeline"], createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish],
     conditional_function: function() {
       if (REPETITIONS > MAX_REPETITIONS || DEBUG) {
         return false;

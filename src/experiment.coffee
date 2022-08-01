@@ -108,13 +108,13 @@ jsPsych = initJsPsych(
       if DEBUG and not DEBUG_SUBMIT
         jsPsych.data.displayData()
       else
-        psiturk.recordUnstructuredData 'final_bonus', calculateBonus()
-        psiturk.recordUnstructuredData 'displayed_bonus', BONUS
+        psiturk.recordUnstructuredData 'final_score', SCORE
         save_data()
 
     on_data_update: (data) ->
       # console.log 'data', data
       psiturk.recordTrialData data
+      console.log("Updating data saved");
       psiturk.saveData()
 )
 psiturk = new PsiTurk uniqueId, adServerLoc, mode
@@ -1082,8 +1082,9 @@ initializeExperiment = ->
 
 
   # if the subject passes the quiz, they continue and can earn a bonus for their performance
+  # createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"])
   no_distractor["if_node2"] =
-    timeline: [additional_base, test, no_distractor["final_quiz"], createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
+    timeline: [additional_base, test, no_distractor["final_quiz"], demographics, finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || DEBUG
         return false
@@ -1099,7 +1100,7 @@ initializeExperiment = ->
         return true
 
   distractor["if_node2"] =
-    timeline: [additional_base, test, distractor["finish_webofcash"],
+    timeline: [additional_base, test, distractor['final_quiz'], distractor["finish_webofcash"],
       distractor["color_game_instructions"], distractor["distractor_2_timeline"]...,
       createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
     conditional_function: ->
