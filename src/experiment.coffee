@@ -21,6 +21,8 @@ else
   """
   CONDITION = parseInt condition
   console.log condition
+  # v1.0 60 % scarcity
+  CONDITION = 4
 
 if mode is "{{ mode }}"
 
@@ -56,7 +58,6 @@ else
 
 # v0.1 - 6 trials only with 60% scarcity
 NUM_TEST_TRIALS = 6
-REWARDED_PROP = 0.6
 
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
