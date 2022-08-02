@@ -273,6 +273,9 @@ img.display {
 /********************************************************************/
 /* Generic element styles                                           */
 /********************************************************************/
+html {
+    height: 100%;
+}
 
 body {
     padding:0px;
@@ -281,6 +284,7 @@ body {
     color: black;
     font-weight: 300;
     font-size: 13pt;
+    height: 100%;
 }
 
 h1 h2 h3 h4 {
