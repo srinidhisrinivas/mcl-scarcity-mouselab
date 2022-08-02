@@ -48,8 +48,8 @@
     float: inside;
     user-select: none;
     position: relative;
-    font-weight: 40;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-family: "Helvetica Neue", Helvetica, Tahoma, sans-serif;
 }
 .stroop-green {
     font-size: 70px;
@@ -57,8 +57,8 @@
     color: green;
     float: inside;
     position: relative;
-    font-weight: 40;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-family: "Helvetica Neue", Helvetica, Verdana, sans-serif;
 }
 .stroop-blue {
     font-size: 70px;
@@ -66,8 +66,8 @@
     float: inside;
     user-select: none;
     position: relative;
-    font-weight: 40;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-family: "Helvetica Neue", Helvetica, "Trebuchet MS", sans-serif;
 }
 .stroop-yellow {
     font-size: 70px;
@@ -75,7 +75,7 @@
     float: inside;
     user-select: none;
     position: relative;
-    font-weight: 40;
+    font-weight: 400;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .stroop-correct {
