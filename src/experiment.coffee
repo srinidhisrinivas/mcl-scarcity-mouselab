@@ -57,7 +57,7 @@ else
   NUM_TEST_TRIALS = 30
 
 # v0.1 - 6 trials only with 60% scarcity
-NUM_TEST_TRIALS = 3
+NUM_TEST_TRIALS = 6
 
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
@@ -608,13 +608,13 @@ initializeExperiment = ->
 
         <br><br>
 
-        Your task is simply to <strong>report the color of the text as fast as possible</strong>. The color of the text can be one of <span style="color:red; font-weight:bold">red</span>, <span style="color:blue; font-weight:bold">blue</span>, <span style="color:green; font-weight:bold">green</span> or <span style="color:yellow; font-weight:bold">yellow</span>. Accordingly, you must press the corresponding key to report the color you see:
+        Your task is simply to <strong>report the color of the text as fast as possible</strong>. The color of the text can be one of <span style="color:red; font-weight:bold">red</span>, <span style="color:blue; font-weight:bold">blue</span>, <span style="color:green; font-weight:bold">green</span> or <span style="color:yellow; font-weight:bold; text-shadow: 0.07em 0 black, 0 0.07em black, -0.07em 0 black, 0 -0.07em black;">yellow</span>. Accordingly, you must press the corresponding key to report the color you see:
         <br> <br>
         <ul style="list-style:none">
             <li><code>R</code> - respond with color <span style="color:red; font-weight:bold">RED</span></li>
             <li><code>B</code> - respond with color <span style="color:blue; font-weight:bold">BLUE</span></li>
             <li><code>G</code> - respond with color <span style="color:green; font-weight:bold">GREEN</span></li>
-            <li><code>Y</code> - respond with color <span style="color:yellow; font-weight:bold">YELLOW</span></li>
+            <li><code>Y</code> - respond with color <span style="color:yellow; font-weight:bold; text-shadow: 0.07em 0 black, 0 0.07em black, -0.07em 0 black, 0 -0.07em black;">YELLOW</span></li>
         </ul>
         <br>
         Examples:
