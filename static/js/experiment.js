@@ -75,7 +75,7 @@ if (DEBUG) {
 }
 
 // v0.1 - 6 trials only with 60% scarcity
-NUM_TEST_TRIALS = 6;
+NUM_TEST_TRIALS = 3;
 
 NUM_TRIALS = Math.ceil(NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]);
 
@@ -155,9 +155,40 @@ final_nodes = void 0;
 jsPsych = initJsPsych({
   display_element: 'jspsych-target',
   on_finish: function() {
+    var prompt_resubmit, save_data;
     if (DEBUG && !DEBUG_SUBMIT) {
       return jsPsych.data.displayData();
     } else {
+      save_data = function() {
+        return psiturk.saveData({
+          success: async function() {
+            console.log('Data saved to psiturk server.');
+            if (typeof reprompt !== "undefined" && reprompt !== null) {
+              window.clearInterval(reprompt);
+            }
+            await completeExperiment(uniqueId); // Encountering an error here? Try to use Coffeescript 2.0 to compile.
+            return psiturk.completeHIT();
+          },
+          error: function() {
+            return prompt_resubmit;
+          }
+        });
+      };
+      prompt_resubmit = function() {
+        $('#jspsych-target').html(`<h1>Oops!</h1>
+<p>
+Something went wrong submitting your HIT.
+This might happen if you lose your internet connection.
+Press the button to resubmit.
+</p>
+<button id="resubmit">Resubmit</button>`);
+        return $('#resubmit').click(function() {
+          var reprompt;
+          $('#jspsych-target').html('Trying to resubmit...');
+          reprompt = window.setTimeout(prompt_resubmit, 10000);
+          return save_data();
+        });
+      };
       psiturk.recordUnstructuredData('final_score', SCORE);
       return save_data();
     }
@@ -1447,8 +1478,7 @@ Please briefly answer the questions below before you submit the HIT.`;
           window.clearInterval(reprompt);
         }
         await completeExperiment(uniqueId); // Encountering an error here? Try to use Coffeescript 2.0 to compile.
-        psiturk.completeHIT();
-        return psiturk.computeBonus('compute_bonus');
+        return psiturk.completeHIT();
       },
       error: function() {
         return prompt_resubmit;
