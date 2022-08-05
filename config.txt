@@ -36,10 +36,10 @@ allow_repeats = true
 # REG: This should be set on Heroku or in the environment variables when not using Docker.
 
 # Local database URL
-# database_url = sqlite:///participants.db
+database_url = sqlite:///participants.db
 
 # Test database URL
-database_url = postgres://sversgtbzxsqov:ba976cf6f061350a538e069080b233ab73c5b21dd22a03e565fc0635c458b728@ec2-99-81-16-126.eu-west-1.compute.amazonaws.com:5432/dajlor36raqaf9
+# database_url = postgres://sversgtbzxsqov:ba976cf6f061350a538e069080b233ab73c5b21dd22a03e565fc0635c458b728@ec2-99-81-16-126.eu-west-1.compute.amazonaws.com:5432/dajlor36raqaf9
 
 # psiTurk creates several database tables to store data and to manage aspects of
 # automated tasks, campaigns, etc...

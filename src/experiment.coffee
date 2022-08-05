@@ -49,6 +49,8 @@ TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
 SCORE = [0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
+STROOP_1_SCORE = 0
+STROOP_2_SCORE = 0
 BONUS_RATE = .002
 
 if DEBUG
@@ -392,7 +394,7 @@ initializeExperiment = ->
         <br><br>
         On your way from start to finish, you will pass through the <em>nodes</em> (gray circles) of the spider web.
 
-        Each of these nodes has a certain value, and the money collected from the nodes that you pass through from start to finish contribute to your score for that round. However, you will only find out your score for that round at the end of the round.
+        Each of these nodes has a certain value, and <strong>the money collected from the nodes that you pass through from start to finish contribute to your score for that round.</strong> Once you finish a round, the score for that round will be displayed.
 
         <br><br>
         Your objective on each round is to get the highest score possible. The cumulative final score over all the rounds will be your final score at the end of the game. The higher your final score at the end of the game, the higher your HIT bonus will be.
@@ -405,7 +407,7 @@ initializeExperiment = ->
       """
 
          """
-        <h1> <em>Web of Cash</em> Node Inspector (1/2) </h1>
+        <h1> <em>Web of Cash</em> (1/3) - Node Inspector</h1>
 
         It's hard to make a good decision when you can't see what you will get!
         Fortunately, in the <em>Web of Cash</em> game you will have access to a <strong><em>node inspector</em></strong> which can reveal
@@ -421,7 +423,7 @@ initializeExperiment = ->
 
     """
          """
-        <h1> Rewards and Costs (2/3) </h1>
+        <h1> <em>Web of Cash</em> (2/3) - Rewards and Costs </h1>
         <div style="text-align: left">
         <li>You can find out about a node's loss or reward by using the node inspector, which costs <strong>$#{COST_FORMATTED} per revealed node.</strong></li>
         <li>In each round, you can see the score for that round in the top right corner.</li>
@@ -481,6 +483,8 @@ initializeExperiment = ->
     on_finish: () ->
       pracTrialCount += 1
       SCORE = 0
+    on_finish_timeline: () ->
+      pracTrialCount = 0
   }
 
   scarce["mouselab_instructions_2"] = {
@@ -489,7 +493,7 @@ initializeExperiment = ->
     pages: -> [
 
       """
-        <h1> Rewards and Costs (3/3) </h1>
+        <h1> <em>Web of Cash</em> (3/3) - Rewards and Costs </h1>
         Now that you understand how the node inspector works from the practice rounds, here is what you need to know about the actual rounds of the game that count:
         <br><br>
         <div style="text-align: left">
@@ -497,7 +501,7 @@ initializeExperiment = ->
         <li>You can find out about a node's loss or reward by using the node inspector, which costs <strong>$#{COST_FORMATTED} per revealed node.</strong></li>
         <li>In each round, you can see the score for that round in the top right corner.</li>
         <li>At the end of each round, you will be told what your score for that round is.</li>
-        <li>But there's a catch! Even though the spider loves money, it is also very forgetful. For this reason, the spider might forget to count the money collected on some rounds. If the spider forgets to count on a round, <strong>you will not know what your score for that round is</strong>.</li>
+        <li><strong>But there's a catch!</strong> Even though the spider loves money, it is also very forgetful. For this reason, the spider might forget to count the money collected on some rounds. <strong>If the spider forgets to count on a round, you will not know what your score for that round is</strong>.</li>
         <li>At the end of the game, you will be told what your score for the whole game is.</li>
         <li>The higher your score at the end of the game, the bigger your bonus will be!</li>
         </div>
@@ -536,7 +540,7 @@ initializeExperiment = ->
     pages: -> [
 
       """
-        <h1> Rewards and Costs (3/3) </h1>
+        <h1> <em>Web of Cash</em> (3/3) - Rewards and Costs </h1>
         Now that you understand how the node inspector works from the practice rounds, here is what you need to know about the actual rounds of the game that count:
         <br><br>
         <div style="text-align: left">
@@ -688,6 +692,7 @@ initializeExperiment = ->
         $('#stroop-text').hide()
         if data.response.toLowerCase() == data.correct_response.toLowerCase()
           $('#correct').show()
+          STROOP_1_SCORE += 1;
         else
           $('#wrong').show()
 
@@ -751,6 +756,7 @@ initializeExperiment = ->
         $('#stroop-text').hide()
         if data.response.toLowerCase() == data.correct_response.toLowerCase()
           $('#correct').show()
+          STROOP_2_SCORE += 1;
         else
           $('#wrong').show()
     distractor["distractor_2_timeline"].push stroop_trials
@@ -779,7 +785,7 @@ initializeExperiment = ->
       """
         <h1> End of First Set of Color-Word Game </h1>
 
-        Congratulations on making it to the end of the Color-Word game!
+        Congratulations on making it to the end of the Color-Word game! Your score for all the rounds of the game was #{STROOP_1_SCORE}/#{NUM_DISTRACTOR_TRIALS_1}.
         <br> <br>
         We will now begin with the next game, <em>Web of Cash</em>. If you would like to take a short break, you may take one now and continue to the next game when you are ready.
         <br> <br>
@@ -789,6 +795,22 @@ initializeExperiment = ->
     ]
   }
 
+  distractor["finish_distractor_2"] = {
+    type: jsPsychInstructions
+    show_clickable_nav: true
+    pages: -> [
+      """
+        <h1> End of Second Set of Color-Word Game </h1>
+
+        Congratulations on making it to the end of the Color-Word game! Your score for all the rounds of the game was #{STROOP_2_SCORE}/#{NUM_DISTRACTOR_TRIALS_2}.
+        <br> <br>
+        With that, you have come to the end of the experiment!
+        <br> <br>
+        Click 'Next' to continue to the end of the HIT.
+
+      """
+    ]
+  }
   distractor["finish_webofcash"] = {
     type: jsPsychInstructions
     show_clickable_nav: true
@@ -809,6 +831,7 @@ initializeExperiment = ->
     ]
   }
 
+
   #instructions quiz -- they have limited tries (MAX_REPETITIONS) here
   scarce["mouselab_quiz"] = {
     preamble: ->  """
@@ -821,6 +844,7 @@ initializeExperiment = ->
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
       {prompt: "Will you receive a bonus?", options: ['No.', 'I will receive a $1 bonus regardless of my performance.', 'I will receive a $1 bonus if I perform well, otherwise I will receive no bonus.', 'The better I perform the higher my bonus will be.'],  horizontal: false, required: true}
       {prompt: "Will each round be the same?", options: ['Yes.','No, the amount of cash at each node of the web may be different each time.', 'No, the structure of the web will be different each time.'],  horizontal: false, required: true}
+      {prompt: "What determines your score for a round?", options: ["The values of the nodes walked through from start to finish.", "The score for a round is random.", "How much time it takes to complete a round."],  horizontal: false, required: true}
       {prompt: "Will you be shown a score on each round?", options: ['Yes.', 'No, the score will only be displayed once at the end of the game.','No, the spider might forget to count the money on some rounds.'],  horizontal: false, required: true}
     ]
     data: {
@@ -829,7 +853,8 @@ initializeExperiment = ->
         Q1: COST_CORRECT
         Q2: 'The better I perform the higher my bonus will be.'
         Q3: 'No, the amount of cash at each node of the web may be different each time.'
-        Q4: 'No, the spider might forget to count the money on some rounds.'
+        Q4: "The values of the nodes walked through from start to finish."
+        Q5: 'No, the spider might forget to count the money on some rounds.'
       }
     }
   }
@@ -845,6 +870,7 @@ initializeExperiment = ->
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
       {prompt: "Will you receive a bonus?", options: ['No.', 'I will receive a $1 bonus regardless of my performance.', 'I will receive a $1 bonus if I perform well, otherwise I will receive no bonus.', 'The better I perform the higher my bonus will be.'],  horizontal: false, required: true}
       {prompt: "Will each round be the same?", options: ['Yes.','No, the amount of cash at each node of the web may be different each time.', 'No, the structure of the web will be different each time.'],  horizontal: false, required: true}
+      {prompt: "What determines your score for a round?", options: ["The values of the nodes walked through from start to finish.", "The score for a round is random.", "How much time it takes to complete a round."],  horizontal: false, required: true}
       {prompt: "Will you be shown a score on each round?", options: ['Yes.', 'No, the score will only be displayed once at the end of the game.','No, the spider might forget to count the money on some rounds.'],  horizontal: false, required: true}
     ]
     data: {
@@ -853,7 +879,8 @@ initializeExperiment = ->
         Q1: COST_CORRECT
         Q2: 'The better I perform the higher my bonus will be.'
         Q3: 'No, the amount of cash at each node of the web may be different each time.'
-        Q4: 'Yes.'
+        Q4: "The values of the nodes walked through from start to finish."
+        Q5: 'Yes.'
       }
     }
   }
@@ -911,6 +938,8 @@ initializeExperiment = ->
     }
 
   no_distractor["final_quiz"] =
+    on_start: ->
+      SCORE = Math.round(SCORE * 100) / 100
     preamble: -> """
       <h1>Quiz</h1>
 
@@ -1127,7 +1156,7 @@ initializeExperiment = ->
   distractor["if_node2"] =
     timeline: [additional_base, test, distractor['final_quiz'], distractor["finish_webofcash"],
       distractor["color_game_instructions"], distractor["distractor_2_timeline"]...,
-      createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"]), demographics, finish]
+      distractor["finish_webofcash_2"], demographics, finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || DEBUG
         return false
@@ -1137,7 +1166,7 @@ initializeExperiment = ->
   distractor["if_node2_debug"] =
     timeline: [additional_base, test, distractor["final_quiz"], distractor["finish_webofcash"],
       distractor["color_game_instructions"], distractor["distractor_2_timeline"]...,
-       finish]
+      distractor["finish_webofcash_2"], finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || !DEBUG
         return false
