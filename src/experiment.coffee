@@ -187,7 +187,7 @@ $(window).on 'load', ->
   delay 300, ->
     console.log 'Loading data'
     PARAMS =
-      CODE : ['hedgehog','bighorn','chinchilla','porcupine','guanaco','walrus','dromedary','aoudad','weasel','rooster','civet','iguana','fruitbat','reindeer','bobcat','fieldmouse'][CONDITION %% 16]
+      CODE : "C6DMOQA6"
       MIN_TIME : 7
       inspectCost: COST
       startTime: Date(Date.now())
