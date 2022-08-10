@@ -791,7 +791,7 @@ class MouselabMDP
         <br><br>
         <b>Press</b> <code>space</code> <b>to continue.</b>
       """
-    $('.mouselab-score').html '$' + @data.score
+    $('.mouselab-score').html '$' + @data.score.toFixed(2)
     $('.mouselab-score').css 'color', redGreen @data.score
     $('.mouselab-score').css 'font-weight', 'bold'
 

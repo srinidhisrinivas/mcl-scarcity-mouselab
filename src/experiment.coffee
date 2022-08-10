@@ -12,6 +12,9 @@ if DEBUG
   """
   CONDITION = parseInt condition
   console.log condition
+  # v0.1 60 % scarcity
+  # length_pilot_1
+  CONDITION = 7
 
 else
   console.log """
@@ -21,14 +24,14 @@ else
   """
   CONDITION = parseInt condition
   console.log condition
-  # v1.0 60 % scarcity
-  CONDITION = 4
+  # length_pilot_1
+  CONDITION = 7
 
 if mode is "{{ mode }}"
 
   CONDITION = 0
 
-REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5]
+REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION]
 COST = REWARDED_PROP
 COST_FORMATTED = COST.toFixed(2);
@@ -48,6 +51,7 @@ COST_EXPLANATION = undefined
 TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
+INSTRUCTIONS_FAILED = false
 SCORE = [0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
 STROOP_1_SCORE = 0
 STROOP_2_SCORE = 0
@@ -58,9 +62,6 @@ if DEBUG
 else
   NUM_TEST_TRIALS = 30
 
-# v0.1 - 6 trials only with 60% scarcity
-NUM_TEST_TRIALS = 6
-
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
 NUM_UNREWARDED_TRIALS = NUM_MDP_TRIALS - NUM_TEST_TRIALS
@@ -70,16 +71,24 @@ NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 
 # Convert MDP trials to stroop trials
 MDP_TO_STROOP_CONVERSION = 7
-MAX_BLOCK_LENGTH = 100
+MAX_MDP_BLOCK_LENGTH = 30
+MAX_STROOP_BLOCK_LENGTH = 100
 if DEBUG
-  MAX_BLOCK_LENGTH = 10
+  MAX_STROOP_BLOCK_LENGTH = 10
+  MAX_MDP_BLOCK_LENGTH = 5
+
+NUM_MDP_BLOCKS = Math.ceil NUM_MDP_TRIALS / MAX_MDP_BLOCK_LENGTH
+MDP_BLOCKS = new Array(NUM_MDP_BLOCKS).fill(Math.floor NUM_MDP_TRIALS / NUM_MDP_BLOCKS)
+REMAINDER_TRIALS = NUM_MDP_TRIALS % NUM_MDP_BLOCKS
+for i in [0...REMAINDER_TRIALS]
+  MDP_BLOCKS[i] += 1
 
 NUM_DISTRACTOR_TRIALS_1 *= MDP_TO_STROOP_CONVERSION
-NUM_BLOCKS_1 = Math.ceil NUM_DISTRACTOR_TRIALS_1 / MAX_BLOCK_LENGTH
+NUM_BLOCKS_1 = Math.ceil NUM_DISTRACTOR_TRIALS_1 / MAX_STROOP_BLOCK_LENGTH
 STROOP_BLOCKS_1 = new Array(NUM_BLOCKS_1).fill(Math.ceil NUM_DISTRACTOR_TRIALS_1 / NUM_BLOCKS_1)
 
 NUM_DISTRACTOR_TRIALS_2 *= MDP_TO_STROOP_CONVERSION
-NUM_BLOCKS_2 = Math.ceil NUM_DISTRACTOR_TRIALS_2 / MAX_BLOCK_LENGTH
+NUM_BLOCKS_2 = Math.ceil NUM_DISTRACTOR_TRIALS_2 / MAX_STROOP_BLOCK_LENGTH
 STROOP_BLOCKS_2 = new Array(NUM_BLOCKS_2).fill(Math.ceil NUM_DISTRACTOR_TRIALS_2 / NUM_BLOCKS_2)
 
 NUM_TUTORIAL_TRIALS = 2
@@ -141,7 +150,6 @@ jsPsych = initJsPsych(
     on_data_update: (data) ->
       # console.log 'data', data
       psiturk.recordTrialData data
-      console.log("Updating data saved");
       psiturk.saveData()
 )
 psiturk = new PsiTurk uniqueId, adServerLoc, mode
@@ -230,12 +238,26 @@ $(window).on 'load', ->
       return _.shuffle trialsJoined
 
     getStroopTrials = (num) ->
-      numOfEachType = Math.ceil(num/3)
+      numCongruent = 0
+      numIncongruent = 0
+      numUnrelated = 0
+      if num % 3 == 1
+        numCongruent = Math.floor(num/3)
+        numIncongruent = Math.ceil(num/3)
+        numUnrelated = Math.floor(num/3)
+      else if num % 3 == 2
+        numCongruent = Math.ceil(num/3)
+        numIncongruent = Math.ceil(num/3)
+        numUnrelated = Math.floor(num/3)
+      else
+        numCongruent = Math.floor(num/3)
+        numIncongruent = Math.floor(num/3)
+        numUnrelated = Math.floor(num/3)
       unrelatedWords = ["SHIP", "FORK", "BRIDGE", "MONKEY", "BRAIN", "STONE", "CHAIR", "BOAT", "WINDOW", "BOTTLE", "DOG"]
       colorWords = ["red","blue","green", "yellow"]
       trials = []
       # Congruent trials
-      for i in [0...numOfEachType]
+      for i in [0...numCongruent]
         color = _.sample(colorWords);
         className = 'stroop-'+color;
         stimText = "<p id='stroop-text' class='#{className}'>#{color.toUpperCase()}</p>";
@@ -250,7 +272,7 @@ $(window).on 'load', ->
         trials.push trial
 
       # Incongruent trials
-      for i in [0...numOfEachType]
+      for i in [0...numIncongruent]
         colorName = _.sample(colorWords);
         remainingColors = colorWords.slice();
         remainingColors.splice(remainingColors.indexOf(colorName),1);
@@ -268,7 +290,7 @@ $(window).on 'load', ->
         trials.push trial
 
       # Unrelated Trials
-      for i in [0...numOfEachType]
+      for i in [0...numUnrelated]
         randomWord = _.sample(unrelatedWords);
         color = _.sample(colorWords);
         className = 'stroop-'+color;
@@ -447,7 +469,7 @@ initializeExperiment = ->
 
         To help you understand the game, it would be helpful to have some practice rounds. The following two rounds will give you a chance to practice playing the game.
         <br> <br>
-        However, the practice rounds will differ from the actual rounds of the game in one important respect: the values at the nodes have the same magnitude (either 10 or -10). This will <strong>NOT</strong> be the case in the actual rounds, and the values of the nodes will instead vary between the nodes.
+        However, the practice rounds will differ from the actual rounds of the game in one important respect: the values at the nodes have the same magnitude (either 10 or -10). This will <strong>NOT</strong> be the case in the actual rounds, and <strong>the values of the nodes in the actual game will instead vary between the nodes.</b>
         <br><br>
         The score you receive on these practice rounds will <b>NOT</b> count towards your final score for this game.
         <br><br>
@@ -483,7 +505,7 @@ initializeExperiment = ->
     on_finish: () ->
       pracTrialCount += 1
       SCORE = 0
-    on_finish_timeline: () ->
+    on_timeline_start: () ->
       pracTrialCount = 0
   }
 
@@ -785,7 +807,7 @@ initializeExperiment = ->
       """
         <h1> End of First Set of Color-Word Game </h1>
 
-        Congratulations on making it to the end of the Color-Word game! Your score for all the rounds of the game was #{STROOP_1_SCORE}/#{NUM_DISTRACTOR_TRIALS_1}.
+        Congratulations on making it to the end of the Color-Word game! Your score for all the rounds of the game was <strong>#{STROOP_1_SCORE}/#{NUM_DISTRACTOR_TRIALS_1}</strong>.
         <br> <br>
         We will now begin with the next game, <em>Web of Cash</em>. If you would like to take a short break, you may take one now and continue to the next game when you are ready.
         <br> <br>
@@ -802,7 +824,7 @@ initializeExperiment = ->
       """
         <h1> End of Second Set of Color-Word Game </h1>
 
-        Congratulations on making it to the end of the Color-Word game! Your score for all the rounds of the game was #{STROOP_2_SCORE}/#{NUM_DISTRACTOR_TRIALS_2}.
+        Congratulations on making it to the end of the Color-Word game! Your score for all the rounds of the game was <strong>#{STROOP_2_SCORE}/#{NUM_DISTRACTOR_TRIALS_2}</strong>.
         <br> <br>
         With that, you have come to the end of the experiment!
         <br> <br>
@@ -884,9 +906,16 @@ initializeExperiment = ->
       }
     }
   }
+  fullscreen = {
+    type: jsPsychFullscreen,
+    fullscreen_mode: true,
+    conditional_function: ->
+      console.log(INSTRUCTIONS_FAILED)
+      return INSTRUCTIONS_FAILED
+  }
 
   scarce["mouselab_instruct_loop"] =
-    timeline: [mouselab_instructions_1, practice_trials, scarce["mouselab_instructions_2"], scarce["mouselab_quiz"]]
+    timeline: [fullscreen, mouselab_instructions_1, practice_trials, scarce["mouselab_instructions_2"], scarce["mouselab_quiz"]]
     conditional_function: ->
       if DEBUG
         return false
@@ -898,13 +927,15 @@ initializeExperiment = ->
         if not (data.last(1).values()[0].correct[resp_id] == response)
           REPETITIONS += 1
           if REPETITIONS < MAX_REPETITIONS
+
             alert """You got at least one question wrong. We'll send you back to the instructions and then you can try again. Number of attempts left: #{MAX_REPETITIONS-REPETITIONS}."""
+            INSTRUCTIONS_FAILED = true
             return true  # try again
       psiturk.saveData()
       return false
 
   no_scarce["mouselab_instruct_loop"] =
-    timeline: [mouselab_instructions_1, practice_trials, no_scarce["mouselab_instructions_2"], no_scarce["mouselab_quiz"]]
+    timeline: [fullscreen, mouselab_instructions_1, practice_trials, no_scarce["mouselab_instructions_2"], no_scarce["mouselab_quiz"]]
     conditional_function: ->
       if DEBUG
         return false
@@ -931,9 +962,10 @@ initializeExperiment = ->
         <br><br>
         Remember, the more money the spider gets, the bigger your bonus will be!
         <br><br>
-        If you need a short break, feel free to take one at any point after you have finished a round. When you are finished with your break, just come back and press <code>space</code> to continue to the next round as normal.
-        <br><br>
         <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+
+        <br><br>
+        (If, at any point, the <code>space</code> key does not take you to the next page, click once on the text and try again.)
         """
     }
 
@@ -943,7 +975,9 @@ initializeExperiment = ->
     preamble: -> """
       <h1>Quiz</h1>
 
-      Your total score for the game was $#{SCORE}. The bonus that you receive will be based on this.
+      Congratulations for making it to the end of the <em>Web of Cash</em> game!
+
+      Your total score for the game was <strong>$#{SCORE}</strong>. The bonus that you receive will be based on this.
       <br><br>
 
       Please answer the following questions about the task before moving on to the questionnaires.
@@ -964,8 +998,9 @@ initializeExperiment = ->
   distractor["final_quiz"] =
     preamble: -> """
       <h1>Quiz</h1>
+      Congratulations for making it to the end of the <em>Web of Cash</em> game!
 
-      Your total score for the game was $#{SCORE}. The bonus that you receive at the end will be based on this.
+      Your total score for the game was <strong>$#{SCORE}. The bonus that you receive at the end will be based on this.
       <br><br>
        Please answer the following questions about the task before moving on to the final game.
 
@@ -985,33 +1020,106 @@ initializeExperiment = ->
   if DEBUG
     minimumTime = null
 
-  # All scarcity trials
-  test = {
-    type: jsPsychMouselabMDP
-    # display: $('#jspsych-target')
-    graph: STRUCTURE.graph
-    layout: STRUCTURE.layout
-    initial: STRUCTURE.initial
-    num_trials: NUM_MDP_TRIALS
-    stateClickCost: () -> COST
-    stateDisplay: 'click'
-    accumulateReward: true
-    wait_for_click: true
-    scoreShift: 5
-    minTime: minimumTime
-    stateBorder : () -> "rgb(187,187,187,1)"#getColor
-    playerImage: 'static/images/spider.png'
-    # trial_id: jsPsych.timelineVariable('trial_id',true)
-    blockName: 'test'
-    lowerMessage: """
+  # Test trial structure
+  MDP_TRIALS = getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
+  test_timeline = []
+  pointer_idx = 0
+  for numBlockTrials, idx in MDP_BLOCKS
+    ready_screen = undefined
+    if idx == 0
+      ready_screen =
+        type: jsPsychHtmlKeyboardResponse
+        choices: [" "]
+        stimulus: """
+
+          <h1> Get ready to start the game! </h1>
+
+          Thank you for reading the instructions. Get ready start with the first of #{MDP_BLOCKS.length} block(s) of this game.
+          <br><br>
+          In this first block, you will complete #{numBlockTrials} rounds of this game before moving on.
+          <br><br>
+          Remember, the more money the spider gets, the bigger your bonus will be!
+          <br><br>
+          <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+
+          <br><br>
+          (If, at any point, the <code>space</code> key does not take you to the next page, click once on the text and try again.)
+        """
+    else
+      ready_screen =
+        type: jsPsychHtmlKeyboardResponse
+        choices: [" "]
+        stimulus: """
+          <h1> End of block! </h1>
+
+          You have reached the end of the block #{idx}/#{MDP_BLOCKS.length}. If you need a short break, feel free to take one now before moving on.
+
+          <br><br>
+          In the next block, you will complete another #{numBlockTrials} rounds of this game.
+
+          <br><br>
+          <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+        """
+
+    test_timeline.push ready_screen
+    block_trials = MDP_TRIALS.slice(pointer_idx, pointer_idx + numBlockTrials)
+    pointer_idx += numBlockTrials
+    test_trials = {
+      type: jsPsychMouselabMDP
+# display: $('#jspsych-target')
+      graph: STRUCTURE.graph
+      layout: STRUCTURE.layout
+      initial: STRUCTURE.initial
+      num_trials: numBlockTrials
+      stateClickCost: () -> COST
+      stateDisplay: 'click'
+      accumulateReward: true
+      wait_for_click: true
+      scoreShift: 5
+      minTime: minimumTime
+      stateBorder : () -> "rgb(187,187,187,1)"#getColor
+      playerImage: 'static/images/spider.png'
+# trial_id: jsPsych.timelineVariable('trial_id',true)
+      blockName: 'test' + (idx+1)
+      lowerMessage: """
       Click on the nodes to reveal their values.<br>
       Move with the arrow keys after you are done clicking.
         """
-    timeline: getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
-    trialCount: () -> trialCount
-    on_finish: () ->
-      trialCount += 1
-  }
+      timeline: block_trials
+      trialCount: () -> trialCount
+      on_finish: () ->
+        trialCount += 1
+      on_timeline_finish: () ->
+        trialCount = 0
+    }
+    test_timeline.push test_trials
+  # All scarcity trials
+#  test = {
+#    type: jsPsychMouselabMDP
+#    # display: $('#jspsych-target')
+#    graph: STRUCTURE.graph
+#    layout: STRUCTURE.layout
+#    initial: STRUCTURE.initial
+#    num_trials: NUM_MDP_TRIALS
+#    stateClickCost: () -> COST
+#    stateDisplay: 'click'
+#    accumulateReward: true
+#    wait_for_click: true
+#    scoreShift: 5
+#    minTime: minimumTime
+#    stateBorder : () -> "rgb(187,187,187,1)"#getColor
+#    playerImage: 'static/images/spider.png'
+#    # trial_id: jsPsych.timelineVariable('trial_id',true)
+#    blockName: 'test'
+#    lowerMessage: """
+#      Click on the nodes to reveal their values.<br>
+#      Move with the arrow keys after you are done clicking.
+#        """
+#    timeline: getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
+#    trialCount: () -> trialCount
+#    on_finish: () ->
+#      trialCount += 1
+#  }
 
   #final screen if participants didn't pass instructions quiz
   no_distractor["finish_fail"] = {
@@ -1138,7 +1246,7 @@ initializeExperiment = ->
   # if the subject passes the quiz, they continue and can earn a bonus for their performance
   # createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"])
   no_distractor["if_node2"] =
-    timeline: [additional_base, test, no_distractor["final_quiz"], demographics, finish]
+    timeline: [test_timeline..., no_distractor["final_quiz"], demographics, finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || DEBUG
         return false
@@ -1146,7 +1254,7 @@ initializeExperiment = ->
         return true
 
   no_distractor["if_node2_debug"] =
-    timeline: [additional_base, test, finish]
+    timeline: [test_timeline..., finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || !DEBUG
         return false
@@ -1154,9 +1262,9 @@ initializeExperiment = ->
         return true
 
   distractor["if_node2"] =
-    timeline: [additional_base, test, distractor['final_quiz'], distractor["finish_webofcash"],
+    timeline: [test_timeline..., distractor['final_quiz'], distractor["finish_webofcash"],
       distractor["color_game_instructions"], distractor["distractor_2_timeline"]...,
-      distractor["finish_webofcash_2"], demographics, finish]
+      distractor["finish_distractor_2"], demographics, finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || DEBUG
         return false
@@ -1164,9 +1272,9 @@ initializeExperiment = ->
         return true
 
   distractor["if_node2_debug"] =
-    timeline: [additional_base, test, distractor["final_quiz"], distractor["finish_webofcash"],
+    timeline: [test_timeline..., distractor["final_quiz"], distractor["finish_webofcash"],
       distractor["color_game_instructions"], distractor["distractor_2_timeline"]...,
-      distractor["finish_webofcash_2"], finish]
+      distractor["finish_distractor_2"], finish]
     conditional_function: ->
       if REPETITIONS > MAX_REPETITIONS || !DEBUG
         return false

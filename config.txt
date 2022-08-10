@@ -36,10 +36,10 @@ allow_repeats = true
 # REG: This should be set on Heroku or in the environment variables when not using Docker.
 
 # Local database URL
-database_url = sqlite:///participants.db
+#database_url = sqlite:///participants.db
 
 # Test database URL
-# database_url = postgres://sversgtbzxsqov:ba976cf6f061350a538e069080b233ab73c5b21dd22a03e565fc0635c458b728@ec2-99-81-16-126.eu-west-1.compute.amazonaws.com:5432/dajlor36raqaf9
+database_url = postgres://sversgtbzxsqov:ba976cf6f061350a538e069080b233ab73c5b21dd22a03e565fc0635c458b728@ec2-99-81-16-126.eu-west-1.compute.amazonaws.com:5432/dajlor36raqaf9
 
 # psiTurk creates several database tables to store data and to manage aspects of
 # automated tasks, campaigns, etc...
@@ -154,7 +154,7 @@ threads = 1
 # Can be any string value -- recommended to use semantic versioning for analysis
 # sanity.
 # REG: CHANGE THIS!
-experiment_code_version = mcl_scarcity_v0.2
+experiment_code_version = mcl_scarcity_length_pilot_v1.1
 
 # The number of possible treatments. Used for random balanced assignment.
 # REG: CHANGE THIS!

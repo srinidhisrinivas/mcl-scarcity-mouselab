@@ -919,7 +919,7 @@ It took you ` + this.data.displayed_time + ` seconds to get to the edge of the w
       this.lowerMessage.html(htmlMessage + `<br><br>
 <b>Press</b> <code>space</code> <b>to continue.</b>`);
     }
-    $('.mouselab-score').html('$' + this.data.score);
+    $('.mouselab-score').html('$' + this.data.score.toFixed(2));
     $('.mouselab-score').css('color', redGreen(this.data.score));
     $('.mouselab-score').css('font-weight', 'bold');
     return this.keyListener = this.jsPsych.pluginAPI.getKeyboardResponse({
