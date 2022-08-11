@@ -689,6 +689,8 @@ initializeExperiment = ->
 
           <br><br>
           <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+          <br><br>
+        <div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>
         """
 
     distractor["distractor_1_timeline"].push ready_screen
@@ -753,6 +755,8 @@ initializeExperiment = ->
 
           <br><br>
           <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+          <br><br>
+<div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>
         """
 
     distractor["distractor_2_timeline"].push ready_screen
@@ -1059,6 +1063,8 @@ initializeExperiment = ->
 
           <br><br>
           <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+          <br><br>
+<div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>
         """
 
     test_timeline.push ready_screen

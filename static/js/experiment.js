@@ -769,15 +769,17 @@ Remember, the better you perform, the bigger your bonus will be!
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
         choices: [" "],
-        stimulus: `<h1> End of block! </h1>
+        stimulus: `  <h1> End of block! </h1>
 
-You have reached the end of the block ${idx}/${STROOP_BLOCKS_1.length}. If you need a short break, feel free to take one now before moving on.
+  You have reached the end of the block ${idx}/${STROOP_BLOCKS_1.length}. If you need a short break, feel free to take one now before moving on.
 
-<br><br>
-In the next block, you will complete another ${numBlockTrials} rounds of this game.
+  <br><br>
+  In the next block, you will complete another ${numBlockTrials} rounds of this game.
 
-<br><br>
-<div style='text-align: center;'>Press <code>space</code> to begin.</div>`
+  <br><br>
+  <div style='text-align: center;'>Press <code>space</code> to begin.</div>
+  <br><br>
+<div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>`
       };
     }
     distractor["distractor_1_timeline"].push(ready_screen);
@@ -845,7 +847,9 @@ You have reached the end of the block ${idx}/${STROOP_BLOCKS_2.length}. If you n
 In the next block, you will complete another ${numBlockTrials} rounds of this game.
 
 <br><br>
-<div style='text-align: center;'>Press <code>space</code> to begin.</div>`
+<div style='text-align: center;'>Press <code>space</code> to begin.</div>
+<br><br>
+<div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>`
       };
     }
     distractor["distractor_2_timeline"].push(ready_screen);
@@ -1309,7 +1313,9 @@ You have reached the end of the block ${idx}/${MDP_BLOCKS.length}. If you need a
 In the next block, you will complete another ${numBlockTrials} rounds of this game.
 
 <br><br>
-<div style='text-align: center;'>Press <code>space</code> to begin.</div>`
+<div style='text-align: center;'>Press <code>space</code> to begin.</div>
+<br><br>
+<div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>`
       };
     }
     test_timeline.push(ready_screen);
