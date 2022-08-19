@@ -991,9 +991,6 @@ Click 'Next' when you are ready to proceed.
 `;
     },
     type: jsPsychSurveyMultiChoice,
-    data: {
-      trial_id: "mouselab_quiz_scarce"
-    },
     questions: [
       {
         prompt: "What is the range of node values in the actual game?",
@@ -1052,7 +1049,8 @@ Click 'Next' when you are ready to proceed.
         Q3: 'No, the amount of cash at each node of the web may be different each time.',
         Q4: "The values of the nodes walked through from start to finish.",
         Q5: 'No, the spider might forget to count the money on some rounds.'
-      }
+      },
+      trial_id: "mouselab_quiz_scarce"
     }
   };
   no_scarce["mouselab_quiz"] = {
@@ -1061,9 +1059,6 @@ Click 'Next' when you are ready to proceed.
 `;
     },
     type: jsPsychSurveyMultiChoice,
-    data: {
-      trial_id: "mouselab_quiz_noscarce"
-    },
     questions: [
       {
         prompt: "What is the range of node values in the actual game?",
@@ -1122,7 +1117,8 @@ Click 'Next' when you are ready to proceed.
         Q3: 'No, the amount of cash at each node of the web may be different each time.',
         Q4: "The values of the nodes walked through from start to finish.",
         Q5: 'Yes.'
-      }
+      },
+      trial_id: "mouselab_quiz_noscarce"
     }
   };
   fullscreen = {

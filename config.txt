@@ -158,7 +158,7 @@ experiment_code_version = mcl_scarcity_length_pilot_v2.0
 
 # The number of possible treatments. Used for random balanced assignment.
 # REG: CHANGE THIS!
-num_conds = 1
+num_conds = 2
 
 # The number of possible counterbalance conditions. Used for random balanced assignment.
 # If you don't know what this is, it is safe to leave it at a default of 1 and

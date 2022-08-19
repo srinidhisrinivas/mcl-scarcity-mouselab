@@ -882,8 +882,6 @@ initializeExperiment = ->
 
     """
     type: jsPsychSurveyMultiChoice
-    data:
-      trial_id: "mouselab_quiz_scarce"
     questions: [
       {prompt: "What is the range of node values in the actual game?", options: ['$0 to $50', '$-10 to $10', '$-48 to $48', '$-100 to $100'], horizontal: false, required: true}
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
@@ -901,6 +899,7 @@ initializeExperiment = ->
         Q4: "The values of the nodes walked through from start to finish."
         Q5: 'No, the spider might forget to count the money on some rounds.'
       }
+      trial_id: "mouselab_quiz_scarce"
     }
   }
 
@@ -910,8 +909,7 @@ initializeExperiment = ->
 
     """
     type: jsPsychSurveyMultiChoice
-    data:
-      trial_id: "mouselab_quiz_noscarce"
+
     questions: [
       {prompt: "What is the range of node values in the actual game?", options: ['$0 to $50', '$-10 to $10', '$-48 to $48', '$-100 to $100'], horizontal: false, required: true}
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
@@ -929,6 +927,7 @@ initializeExperiment = ->
         Q4: "The values of the nodes walked through from start to finish."
         Q5: 'Yes.'
       }
+      trial_id: "mouselab_quiz_noscarce"
     }
   }
   fullscreen = {
