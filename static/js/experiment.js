@@ -14,24 +14,22 @@ if (DEBUG) {
 X X X X X X X X X X X X X X X X X`);
   CONDITION = parseInt(condition);
   console.log(condition);
-  // v0.1 60 % scarcity
-  // length_pilot_1
-  CONDITION = 7;
 } else {
   console.log(`# =============================== #
 # ========= NORMAL MODE ========= #
 # =============================== #`);
   CONDITION = parseInt(condition);
   console.log(condition);
-  // length_pilot_1
-  CONDITION = 7;
 }
 
 if (mode === "{{ mode }}") {
   CONDITION = 0;
 }
 
-REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3];
+// REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+// mcl_scarcity_length_pilot_v2.0
+// Length pilot 2
+REWARDED_PROPORTIONS = [1, 0.25];
 
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION];
 
@@ -304,7 +302,7 @@ $(window).on('load', function() {
       return trials;
     };
     getScarcityTrials = function(numRewarded, numUnrewarded) {
-      var idx, k, l, len, len1, rewardedTrials, shuffledTrials, trial, trialsJoined, unrewardedTrials;
+      var idx, k, l, len, len1, len2, m, rewardedTrials, shuffledTrials, trial, trialsJoined, unrewardedTrials;
       shuffledTrials = _.shuffle(TRIALS);
       rewardedTrials = shuffledTrials.slice(0, numRewarded);
       unrewardedTrials = shuffledTrials.slice(numRewarded, numRewarded + numUnrewarded);
@@ -317,6 +315,10 @@ $(window).on('load', function() {
         trial["withholdReward"] = true;
       }
       trialsJoined = rewardedTrials.concat(unrewardedTrials);
+      for (idx = m = 0, len2 = trialsJoined.length; m < len2; idx = ++m) {
+        trial = trialsJoined[idx];
+        trial["trial_id"] = "mdp_" + trial["trial_id"];
+      }
       return _.shuffle(trialsJoined);
     };
     getStroopTrials = function(num) {
@@ -349,7 +351,8 @@ $(window).on('load', function() {
           "stimulus-type": "congruent",
           "word": color,
           "color": color,
-          "correct_response": color[0].toLowerCase()
+          "correct_response": color[0].toLowerCase(),
+          "trial_id": "stroop-congruent-" + (i + 1)
         };
         trial = {
           stimulus: stimText,
@@ -369,7 +372,8 @@ $(window).on('load', function() {
           "stimulus-type": "incongruent",
           "word": colorName,
           "color": color,
-          "correct_response": color[0].toLowerCase()
+          "correct_response": color[0].toLowerCase(),
+          "trial_id": "stroop-incongruent-" + (i + 1)
         };
         trial = {
           stimulus: stimText,
@@ -387,7 +391,8 @@ $(window).on('load', function() {
           "stimulus-type": "unrelated",
           "word": randomWord,
           "color": color,
-          "correct_response": color[0].toLowerCase()
+          "correct_response": color[0].toLowerCase(),
+          "trial_id": "stroop-unrelated-" + (i + 1)
         };
         trial = {
           stimulus: stimText,
@@ -486,7 +491,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var MDP_TRIALS, additional_base, block_trials, demographics, distractor, experiment_timeline, finish, fullscreen, idx, k, l, len, len1, len2, m, minimumTime, mouselab_instructions_1, no_distractor, no_scarce, numBlockTrials, pointer_idx, practice_trials, prompt_resubmit, ready_screen, reprompt, save_data, scarce, secret_code_trial, stroop_trials, test_timeline, test_trials;
+  var MDP_TRIALS, block_trials, demographics, distractor, experiment_timeline, finish, fullscreen, idx, k, l, len, len1, len2, m, minimumTime, mouselab_instructions_1, no_distractor, no_scarce, numBlockTrials, pointer_idx, practice_trials, prompt_resubmit, ready_screen, reprompt, save_data, scarce, secret_code_trial, stroop_trials, test_timeline, test_trials;
   $('#jspsych-target').html('');
   //  ============================== #
   //  ========= EXPERIMENT ========= #
@@ -501,6 +506,9 @@ initializeExperiment = function() {
       return psiturk.finishInstructions(); //started instructions, so no longer worth keeping in database
     },
     show_clickable_nav: true,
+    data: {
+      trial_id: "exp_instructions_no_distractor"
+    },
     pages: function() {
       return [
         `<h1> Instructions </h1>
@@ -517,6 +525,9 @@ The better you perform, the higher your bonus will be.
   };
   mouselab_instructions_1 = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "mouselab_instructions_1"
+    },
     on_start: function() {
       return psiturk.finishInstructions(); //started instructions, so no longer worth keeping in database
     },
@@ -617,6 +628,9 @@ Move with the arrow keys after you are done clicking.`,
   };
   scarce["mouselab_instructions_2"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "mouselab_instructions_2_scarce"
+    },
     show_clickable_nav: true,
     pages: function() {
       return [
@@ -656,6 +670,9 @@ You <em>must</em> pass the quiz in at most <strong>${MAX_REPETITIONS}</strong> a
   };
   no_scarce["mouselab_instructions_2"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "mouselab_instructions_2_noscarce"
+    },
     on_start: function() {},
     show_clickable_nav: true,
     pages: function() {
@@ -695,6 +712,12 @@ You <em>must</em> pass the quiz in at most <strong>${MAX_REPETITIONS}</strong> a
   };
   distractor["experiment_instructions"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "exp_instructions_distractor"
+    },
+    on_start: function() {
+      return psiturk.finishInstructions(); //started instructions, so no longer worth keeping in database
+    },
     show_clickable_nav: true,
     pages: function() {
       return [
@@ -716,6 +739,9 @@ The better you perform on these games, the higher your bonus will be. The whole 
   };
   distractor["color_game_instructions"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "color_game_instructions"
+    },
     show_clickable_nav: true,
     pages: function() {
       return [
@@ -754,6 +780,9 @@ Click 'Next' when you are ready to start!
     if (idx === 0) {
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
+        data: {
+          trial_id: "stroop_1_ready_" + (idx + 1)
+        },
         choices: [" "],
         stimulus: `<h1> Get ready to start the game! </h1>
 
@@ -768,6 +797,9 @@ Remember, the better you perform, the bigger your bonus will be!
     } else {
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
+        data: {
+          trial_id: "stroop_1_ready_" + (idx + 1)
+        },
         choices: [" "],
         stimulus: `  <h1> End of block! </h1>
 
@@ -824,6 +856,9 @@ Remember, the better you perform, the bigger your bonus will be!
     if (idx === 0) {
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
+        data: {
+          trial_id: "stroop_2_ready_" + (idx + 1)
+        },
         choices: [" "],
         stimulus: `<h1> Get ready to start the game! </h1>
 
@@ -839,6 +874,9 @@ Remember, the better you perform, the bigger your bonus will be!
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
         choices: [" "],
+        data: {
+          trial_id: "stroop_2_ready_" + (idx + 1)
+        },
         stimulus: `<h1> End of block! </h1>
 
 You have reached the end of the block ${idx}/${STROOP_BLOCKS_2.length}. If you need a short break, feel free to take one now before moving on.
@@ -886,24 +924,11 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
     };
     distractor["distractor_2_timeline"].push(stroop_trials);
   }
-  //  distractor["color_game_ready"] = {
-  //    type: jsPsychHtmlKeyboardResponse
-  //    choices: [" "]
-  //    stimulus: """
-  //        <h1> Get ready to start the game! </h1>
-
-  //        Thank you for reading the instructions.
-
-  //        <br><br>
-  //        You will complete #{NUM_TRIALS} rounds of this game before moving on to the next game.
-  //        <br><br>
-  //        Remember, the better you perform, the bigger your bonus will be!
-  //        <br><br>
-  //        <div style='text-align: center;'>Press <code>space</code> to begin.</div>
-  //        """
-  //  }
   distractor["finish_distractor"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "finish_distractor_1"
+    },
     show_clickable_nav: true,
     pages: function() {
       return [
@@ -920,6 +945,9 @@ Click 'Next' when you are ready to proceed to the instructions of the next game.
   };
   distractor["finish_distractor_2"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "finish_distractor_2"
+    },
     show_clickable_nav: true,
     pages: function() {
       return [
@@ -936,6 +964,9 @@ Click 'Next' to continue to the end of the HIT.
   };
   distractor["finish_webofcash"] = {
     type: jsPsychInstructions,
+    data: {
+      trial_id: "finish_web_of_cash"
+    },
     show_clickable_nav: true,
     pages: function() {
       return [
@@ -960,6 +991,9 @@ Click 'Next' when you are ready to proceed.
 `;
     },
     type: jsPsychSurveyMultiChoice,
+    data: {
+      trial_id: "mouselab_quiz_scarce"
+    },
     questions: [
       {
         prompt: "What is the range of node values in the actual game?",
@@ -1027,6 +1061,9 @@ Click 'Next' when you are ready to proceed.
 `;
     },
     type: jsPsychSurveyMultiChoice,
+    data: {
+      trial_id: "mouselab_quiz_noscarce"
+    },
     questions: [
       {
         prompt: "What is the range of node values in the actual game?",
@@ -1149,20 +1186,6 @@ Click 'Next' when you are ready to proceed.
       return false;
     }
   };
-  additional_base = {
-    type: jsPsychHtmlKeyboardResponse,
-    choices: [" ", "a"],
-    stimulus: `<h1> Get ready to start the game! </h1>
-
-Thank you for reading the instructions. We will now start with the rounds of the actual game.
-<br><br>
-Remember, the more money the spider gets, the bigger your bonus will be!
-<br><br>
-<div style='text-align: center;'>Press <code>space</code> to begin.</div>
-
-<br><br>
-(If, at any point, the <code>space</code> key does not take you to the next page, click once on the text and try again.)`
-  };
   no_distractor["final_quiz"] = {
     on_start: function() {
       return SCORE = Math.round(SCORE * 100) / 100;
@@ -1179,6 +1202,9 @@ Please answer the following questions about the task before moving on to the que
 `;
     },
     type: jsPsychSurveyMultiChoice,
+    data: {
+      trial_id: "final_quiz_nodistractor"
+    },
     on_finish: function() {
       return BONUS = calculateBonus().toFixed(2);
     },
@@ -1231,6 +1257,9 @@ Your total score for the game was <strong>$${SCORE}. The bonus that you receive 
 `;
     },
     type: jsPsychSurveyMultiChoice,
+    data: {
+      trial_id: "final_quiz_distractor"
+    },
     on_finish: function() {
       return BONUS = calculateBonus().toFixed(2);
     },
@@ -1286,6 +1315,9 @@ Your total score for the game was <strong>$${SCORE}. The bonus that you receive 
     if (idx === 0) {
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
+        data: {
+          trial_id: "mdp_ready_" + (idx + 1)
+        },
         choices: [" "],
         stimulus: `
 <h1> Get ready to start the game! </h1>
@@ -1304,6 +1336,9 @@ Remember, the more money the spider gets, the bigger your bonus will be!
     } else {
       ready_screen = {
         type: jsPsychHtmlKeyboardResponse,
+        data: {
+          trial_id: "mdp_ready_" + (idx + 1)
+        },
         choices: [" "],
         stimulus: `<h1> End of block! </h1>
 
@@ -1388,6 +1423,9 @@ Move with the arrow keys after you are done clicking.`,
   //final screen if participants didn't pass instructions quiz
   no_distractor["finish_fail"] = {
     type: jsPsychSurveyText,
+    data: {
+      trial_id: "finish_fail_nodistractor"
+    },
     preamble: function() {
       return `<h1> You've completed the HIT </h1>
 
@@ -1426,6 +1464,9 @@ Before you submit the HIT, we are interested in knowing some demographic info, a
   };
   distractor["finish_fail"] = {
     type: jsPsychSurveyText,
+    data: {
+      trial_id: "finish_fail_distractor"
+    },
     preamble: function() {
       return `<h1> You've completed the HIT </h1>
 

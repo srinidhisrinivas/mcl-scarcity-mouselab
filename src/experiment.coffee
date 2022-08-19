@@ -12,9 +12,7 @@ if DEBUG
   """
   CONDITION = parseInt condition
   console.log condition
-  # v0.1 60 % scarcity
-  # length_pilot_1
-  CONDITION = 7
+
 
 else
   console.log """
@@ -24,14 +22,16 @@ else
   """
   CONDITION = parseInt condition
   console.log condition
-  # length_pilot_1
-  CONDITION = 7
+
 
 if mode is "{{ mode }}"
 
   CONDITION = 0
 
-REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+# REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+# mcl_scarcity_length_pilot_v2.0
+# Length pilot 2
+REWARDED_PROPORTIONS = [1, 0.25]
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION]
 COST = REWARDED_PROP
 COST_FORMATTED = COST.toFixed(2);
@@ -235,6 +235,8 @@ $(window).on 'load', ->
         trial["withholdReward"] = true
 
       trialsJoined = rewardedTrials.concat(unrewardedTrials)
+      for trial, idx in trialsJoined
+        trial["trial_id"] = "mdp_" + trial["trial_id"]
       return _.shuffle trialsJoined
 
     getStroopTrials = (num) ->
@@ -266,6 +268,7 @@ $(window).on 'load', ->
           "word" : color,
           "color": color,
           "correct_response" : color[0].toLowerCase()
+          "trial_id" : "stroop-congruent-" + (i+1)
         trial =
           stimulus: stimText,
           data: data
@@ -284,6 +287,7 @@ $(window).on 'load', ->
           "word" : colorName,
           "color": color,
           "correct_response" : color[0].toLowerCase()
+          "trial_id" : "stroop-incongruent-" + (i+1)
         trial =
           stimulus: stimText,
           data: data
@@ -300,6 +304,7 @@ $(window).on 'load', ->
           "word" : randomWord,
           "color": color,
           "correct_response" : color[0].toLowerCase()
+          "trial_id" : "stroop-unrelated-" + (i+1)
         trial =
           stimulus: stimText,
           data: data
@@ -388,6 +393,8 @@ initializeExperiment = ->
     on_start: () ->
       psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
     show_clickable_nav: true
+    data:
+      trial_id: "exp_instructions_no_distractor"
     pages: -> [
       """
         <h1> Instructions </h1>
@@ -404,6 +411,8 @@ initializeExperiment = ->
   }
   mouselab_instructions_1 = {
     type: jsPsychInstructions
+    data:
+      trial_id: "mouselab_instructions_1"
     on_start: () ->
       psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
     show_clickable_nav: true
@@ -511,6 +520,8 @@ initializeExperiment = ->
 
   scarce["mouselab_instructions_2"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "mouselab_instructions_2_scarce"
     show_clickable_nav: true
     pages: -> [
 
@@ -557,6 +568,8 @@ initializeExperiment = ->
 
   no_scarce["mouselab_instructions_2"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "mouselab_instructions_2_noscarce"
     on_start: () ->
     show_clickable_nav: true
     pages: -> [
@@ -603,6 +616,10 @@ initializeExperiment = ->
 
   distractor["experiment_instructions"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "exp_instructions_distractor"
+    on_start: () ->
+      psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
     show_clickable_nav: true
     pages: -> [
       """
@@ -625,6 +642,8 @@ initializeExperiment = ->
 
   distractor["color_game_instructions"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "color_game_instructions"
     show_clickable_nav: true
     pages: -> [
       """
@@ -663,6 +682,8 @@ initializeExperiment = ->
     if idx == 0
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
+        data:
+          trial_id: "stroop_1_ready_" + (idx+1)
         choices: [" "]
         stimulus: """
           <h1> Get ready to start the game! </h1>
@@ -678,6 +699,8 @@ initializeExperiment = ->
     else
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
+        data:
+          trial_id: "stroop_1_ready_" + (idx+1)
         choices: [" "]
         stimulus: """
           <h1> End of block! </h1>
@@ -729,6 +752,8 @@ initializeExperiment = ->
     if idx == 0
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
+        data:
+          trial_id: "stroop_2_ready_" + (idx+1)
         choices: [" "]
         stimulus: """
           <h1> Get ready to start the game! </h1>
@@ -745,6 +770,8 @@ initializeExperiment = ->
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
         choices: [" "]
+        data:
+          trial_id: "stroop_2_ready_" + (idx+1)
         stimulus: """
           <h1> End of block! </h1>
 
@@ -787,25 +814,11 @@ initializeExperiment = ->
           $('#wrong').show()
     distractor["distractor_2_timeline"].push stroop_trials
 
-#  distractor["color_game_ready"] = {
-#    type: jsPsychHtmlKeyboardResponse
-#    choices: [" "]
-#    stimulus: """
-#        <h1> Get ready to start the game! </h1>
-#
-#        Thank you for reading the instructions.
-#
-#        <br><br>
-#        You will complete #{NUM_TRIALS} rounds of this game before moving on to the next game.
-#        <br><br>
-#        Remember, the better you perform, the bigger your bonus will be!
-#        <br><br>
-#        <div style='text-align: center;'>Press <code>space</code> to begin.</div>
-#        """
-#  }
 
   distractor["finish_distractor"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "finish_distractor_1"
     show_clickable_nav: true
     pages: -> [
       """
@@ -823,6 +836,8 @@ initializeExperiment = ->
 
   distractor["finish_distractor_2"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "finish_distractor_2"
     show_clickable_nav: true
     pages: -> [
       """
@@ -839,6 +854,8 @@ initializeExperiment = ->
   }
   distractor["finish_webofcash"] = {
     type: jsPsychInstructions
+    data:
+      trial_id: "finish_web_of_cash"
     show_clickable_nav: true
     pages: -> [
       """
@@ -865,6 +882,8 @@ initializeExperiment = ->
 
     """
     type: jsPsychSurveyMultiChoice
+    data:
+      trial_id: "mouselab_quiz_scarce"
     questions: [
       {prompt: "What is the range of node values in the actual game?", options: ['$0 to $50', '$-10 to $10', '$-48 to $48', '$-100 to $100'], horizontal: false, required: true}
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
@@ -891,6 +910,8 @@ initializeExperiment = ->
 
     """
     type: jsPsychSurveyMultiChoice
+    data:
+      trial_id: "mouselab_quiz_noscarce"
     questions: [
       {prompt: "What is the range of node values in the actual game?", options: ['$0 to $50', '$-10 to $10', '$-48 to $48', '$-100 to $100'], horizontal: false, required: true}
       {prompt: COST_QUESTION, options: COST_ANSWERS ,  horizontal: false, required: true}
@@ -956,26 +977,11 @@ initializeExperiment = ->
       psiturk.saveData()
       return false
 
-  additional_base = {
-    type: jsPsychHtmlKeyboardResponse
-    choices: [" ","a"]
-    stimulus: """
-        <h1> Get ready to start the game! </h1>
-
-        Thank you for reading the instructions. We will now start with the rounds of the actual game.
-        <br><br>
-        Remember, the more money the spider gets, the bigger your bonus will be!
-        <br><br>
-        <div style='text-align: center;'>Press <code>space</code> to begin.</div>
-
-        <br><br>
-        (If, at any point, the <code>space</code> key does not take you to the next page, click once on the text and try again.)
-        """
-    }
 
   no_distractor["final_quiz"] =
     on_start: ->
       SCORE = Math.round(SCORE * 100) / 100
+
     preamble: -> """
       <h1>Quiz</h1>
 
@@ -988,6 +994,8 @@ initializeExperiment = ->
 
     """
     type: jsPsychSurveyMultiChoice
+    data:
+      trial_id: "final_quiz_nodistractor"
     on_finish: ->
       BONUS = calculateBonus().toFixed(2)
     questions: [
@@ -1010,6 +1018,8 @@ initializeExperiment = ->
 
     """
     type: jsPsychSurveyMultiChoice
+    data:
+      trial_id: "final_quiz_distractor"
     on_finish: ->
       BONUS = calculateBonus().toFixed(2)
     questions: [
@@ -1033,6 +1043,8 @@ initializeExperiment = ->
     if idx == 0
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
+        data:
+          trial_id: "mdp_ready_" + (idx+1)
         choices: [" "]
         stimulus: """
 
@@ -1052,6 +1064,8 @@ initializeExperiment = ->
     else
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
+        data:
+          trial_id: "mdp_ready_" + (idx+1)
         choices: [" "]
         stimulus: """
           <h1> End of block! </h1>
@@ -1130,6 +1144,8 @@ initializeExperiment = ->
   #final screen if participants didn't pass instructions quiz
   no_distractor["finish_fail"] = {
        type: jsPsychSurveyText
+       data:
+        trial_id: "finish_fail_nodistractor"
        preamble: ->  """
            <h1> You've completed the HIT </h1>
 
@@ -1152,6 +1168,8 @@ initializeExperiment = ->
 
   distractor["finish_fail"] = {
     type: jsPsychSurveyText
+    data:
+      trial_id: "finish_fail_distractor"
     preamble: ->  """
            <h1> You've completed the HIT </h1>
 
