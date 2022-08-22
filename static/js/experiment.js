@@ -14,12 +14,15 @@ if (DEBUG) {
 X X X X X X X X X X X X X X X X X`);
   CONDITION = parseInt(condition);
   console.log(condition);
+  CONDITION = 1;
 } else {
   console.log(`# =============================== #
 # ========= NORMAL MODE ========= #
 # =============================== #`);
   CONDITION = parseInt(condition);
   console.log(condition);
+  // mcl_scarcity_length_pilot_v2.1
+  CONDITION = 1;
 }
 
 if (mode === "{{ mode }}") {
@@ -27,8 +30,8 @@ if (mode === "{{ mode }}") {
 }
 
 // REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
-// mcl_scarcity_length_pilot_v2.0
-// Length pilot 2
+// mcl_scarcity_length_pilot_v2.1
+// Length pilot 2.1
 REWARDED_PROPORTIONS = [1, 0.25];
 
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION];
@@ -262,7 +265,7 @@ $(window).on('load', function() {
     var id;
     console.log('Loading data');
     PARAMS = {
-      CODE: "C6DMOQA6",
+      CODE: "CD8YV6VN",
       MIN_TIME: 7,
       inspectCost: COST,
       startTime: Date(Date.now()),
@@ -321,7 +324,7 @@ $(window).on('load', function() {
       }
       return _.shuffle(trialsJoined);
     };
-    getStroopTrials = function(num) {
+    getStroopTrials = function(num, id) {
       var className, color, colorName, colorWords, data, k, l, m, numCongruent, numIncongruent, numUnrelated, randomWord, ref1, ref2, ref3, remainingColors, stimText, trial, trials, unrelatedWords;
       numCongruent = 0;
       numIncongruent = 0;
@@ -352,7 +355,7 @@ $(window).on('load', function() {
           "word": color,
           "color": color,
           "correct_response": color[0].toLowerCase(),
-          "trial_id": "stroop-congruent-" + (i + 1)
+          "trial_id": "stroop-trial-" + id + "-congruent-" + (i + 1)
         };
         trial = {
           stimulus: stimText,
@@ -373,7 +376,7 @@ $(window).on('load', function() {
           "word": colorName,
           "color": color,
           "correct_response": color[0].toLowerCase(),
-          "trial_id": "stroop-incongruent-" + (i + 1)
+          "trial_id": "stroop-trial-" + id + "-incongruent-" + (i + 1)
         };
         trial = {
           stimulus: stimText,
@@ -392,7 +395,7 @@ $(window).on('load', function() {
           "word": randomWord,
           "color": color,
           "correct_response": color[0].toLowerCase(),
-          "trial_id": "stroop-unrelated-" + (i + 1)
+          "trial_id": "stroop-trial-" + id + "-unrelated-" + (i + 1)
         };
         trial = {
           stimulus: stimText,
@@ -516,9 +519,10 @@ initializeExperiment = function() {
 In this HIT, you will play ${NUM_MDP_TRIALS} rounds of the <em>Web of Cash</em> game.
 <br> <br>
 
-First you will be given the instructions and answer some questions to check your understanding of the game. The whole HIT will take about 35 minutes.
+First you will be given the instructions and answer some questions to check your understanding of the game.
 
-The better you perform, the higher your bonus will be.
+<br><br>
+If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
 `
       ];
     }
@@ -527,9 +531,6 @@ The better you perform, the higher your bonus will be.
     type: jsPsychInstructions,
     data: {
       trial_id: "mouselab_instructions_1"
-    },
-    on_start: function() {
-      return psiturk.finishInstructions(); //started instructions, so no longer worth keeping in database
     },
     show_clickable_nav: true,
     pages: function() {
@@ -732,7 +733,7 @@ First, you will play ${NUM_DISTRACTOR_TRIALS_1} rounds of the <em>Color Word</em
 Before each game, you will be given instructions on how to play the game. You may also have to answer some questions to check your understanding of the game.
 
 <br><br>
-The better you perform on these games, the higher your bonus will be. The whole HIT will last around 35 minutes.
+If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
 `
       ];
     }
@@ -834,7 +835,7 @@ Remember, the better you perform, the bigger your bonus will be!
       },
       post_trial_gap: 500,
       choices: ["r", "g", "b", "y"],
-      timeline: getStroopTrials(numBlockTrials),
+      timeline: getStroopTrials(numBlockTrials, 1),
       css_classes: ['stroop-trial'],
       on_finish: function(data) {
         $('#stroop-text').hide();
@@ -910,7 +911,7 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
       },
       post_trial_gap: 500,
       choices: ["r", "g", "b", "y"],
-      timeline: getStroopTrials(numBlockTrials),
+      timeline: getStroopTrials(numBlockTrials, 2),
       css_classes: ['stroop-trial'],
       on_finish: function(data) {
         $('#stroop-text').hide();
@@ -1468,7 +1469,7 @@ Before you submit the HIT, we are interested in knowing some demographic info, a
 
 Thanks for participating. Unfortunately we can only allow those who understand the instructions to continue with the HIT.
 
-You will receive only the base pay amount and the bonus earned for the first game when you submit.
+You will receive only the base pay amount earned for the first game when you submit.
 
 Before you submit the HIT, we are interested in knowing some demographic info, and if possible, what problems you encountered with the instructions/HIT.`;
     },

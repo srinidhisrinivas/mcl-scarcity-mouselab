@@ -154,11 +154,11 @@ threads = 1
 # Can be any string value -- recommended to use semantic versioning for analysis
 # sanity.
 # REG: CHANGE THIS!
-experiment_code_version = mcl_scarcity_length_pilot_v2.0
+experiment_code_version = mcl_scarcity_length_pilot_v2.1
 
 # The number of possible treatments. Used for random balanced assignment.
 # REG: CHANGE THIS!
-num_conds = 2
+num_conds = 1
 
 # The number of possible counterbalance conditions. Used for random balanced assignment.
 # If you don't know what this is, it is safe to leave it at a default of 1 and
