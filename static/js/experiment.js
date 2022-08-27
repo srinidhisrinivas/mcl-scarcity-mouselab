@@ -14,7 +14,7 @@ if (DEBUG) {
 X X X X X X X X X X X X X X X X X`);
   CONDITION = parseInt(condition);
   console.log(condition);
-  CONDITION = 1;
+  CONDITION = 0;
 } else {
   console.log(`# =============================== #
 # ========= NORMAL MODE ========= #
@@ -22,7 +22,7 @@ X X X X X X X X X X X X X X X X X`);
   CONDITION = parseInt(condition);
   console.log(condition);
   // mcl_scarcity_length_pilot_v2.1
-  CONDITION = 1;
+  CONDITION = 0;
 }
 
 if (mode === "{{ mode }}") {
@@ -523,6 +523,10 @@ First you will be given the instructions and answer some questions to check your
 
 <br><br>
 If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
+
+<br><br>
+
+<strong>NOTE: </strong> Please complete the experiment within one sitting without closing or refreshing the page. If you do either of these, you will no longer be able to get back into the experiment to complete it.
 `
       ];
     }
@@ -734,7 +738,9 @@ Before each game, you will be given instructions on how to play the game. You ma
 
 <br><br>
 If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
-`
+
+<br><br>
+<strong>NOTE: </strong> Please complete the experiment within one sitting without closing or refreshing the page. If you do either of these, you will no longer be able to get back into the experiment to complete it.`
       ];
     }
   };
