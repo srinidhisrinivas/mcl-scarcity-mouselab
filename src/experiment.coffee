@@ -62,7 +62,9 @@ BONUS_RATE = .002
 if DEBUG
   NUM_TEST_TRIALS = 10
 else
-  NUM_TEST_TRIALS = 30
+  # TODO: Change this back - pilot v3.0
+  # NUM_TEST_TRIALS = 30
+  NUM_TEST_TRIALS = 2
 
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
@@ -74,7 +76,9 @@ NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 # Convert MDP trials to stroop trials
 MDP_TO_STROOP_CONVERSION = 10
 MAX_MDP_BLOCK_LENGTH = 30
-MAX_STROOP_BLOCK_LENGTH = 100
+# TODO: Change back - pilot v3.0
+# MAX_STROOP_BLOCK_LENGTH = 100
+MAX_STROOP_BLOCK_LENGTH = 6
 if DEBUG
   MAX_STROOP_BLOCK_LENGTH = 10
   MAX_MDP_BLOCK_LENGTH = 5
@@ -493,6 +497,7 @@ initializeExperiment = ->
       ]
     }
 
+    # TODO: Update to wait_for_click: true - pilot v3.0
   practice_trials = {
     type: jsPsychMouselabMDP
 # display: $('#jspsych-target')
@@ -503,7 +508,7 @@ initializeExperiment = ->
     stateClickCost: () -> COST
     stateDisplay: 'click'
     accumulateReward: true
-    wait_for_click: true
+    wait_for_click: false
     withholdReward: false
     scoreShift: 2
     stateBorder : () -> "rgb(187,187,187,1)"#getColor
@@ -1091,6 +1096,7 @@ initializeExperiment = ->
     test_timeline.push ready_screen
     block_trials = MDP_TRIALS.slice(pointer_idx, pointer_idx + numBlockTrials)
     pointer_idx += numBlockTrials
+    # TODO: Update to wait_for_click true - pilot v3.0
     test_trials = {
       type: jsPsychMouselabMDP
 # display: $('#jspsych-target')
@@ -1101,7 +1107,7 @@ initializeExperiment = ->
       stateClickCost: () -> COST
       stateDisplay: 'click'
       accumulateReward: true
-      wait_for_click: true
+      wait_for_click: false
       scoreShift: 5
       minTime: minimumTime
       stateBorder : () -> "rgb(187,187,187,1)"#getColor

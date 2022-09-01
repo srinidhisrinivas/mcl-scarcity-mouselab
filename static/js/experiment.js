@@ -80,7 +80,9 @@ BONUS_RATE = .002;
 if (DEBUG) {
   NUM_TEST_TRIALS = 10;
 } else {
-  NUM_TEST_TRIALS = 30;
+  // TODO: Change this back - pilot v3.0
+  // NUM_TEST_TRIALS = 30
+  NUM_TEST_TRIALS = 2;
 }
 
 NUM_TRIALS = Math.ceil(NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]);
@@ -100,7 +102,9 @@ MDP_TO_STROOP_CONVERSION = 10;
 
 MAX_MDP_BLOCK_LENGTH = 30;
 
-MAX_STROOP_BLOCK_LENGTH = 100;
+// TODO: Change back - pilot v3.0
+// MAX_STROOP_BLOCK_LENGTH = 100
+MAX_STROOP_BLOCK_LENGTH = 6;
 
 if (DEBUG) {
   MAX_STROOP_BLOCK_LENGTH = 10;
@@ -595,6 +599,7 @@ Click 'Next' to start with the practice rounds.`
       ];
     }
   };
+  // TODO: Update to wait_for_click: true - pilot v3.0
   practice_trials = {
     type: jsPsychMouselabMDP,
     // display: $('#jspsych-target')
@@ -607,7 +612,7 @@ Click 'Next' to start with the practice rounds.`
     },
     stateDisplay: 'click',
     accumulateReward: true,
-    wait_for_click: true,
+    wait_for_click: false,
     withholdReward: false,
     scoreShift: 2,
     stateBorder: function() {
@@ -1359,6 +1364,7 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
     test_timeline.push(ready_screen);
     block_trials = MDP_TRIALS.slice(pointer_idx, pointer_idx + numBlockTrials);
     pointer_idx += numBlockTrials;
+    // TODO: Update to wait_for_click true - pilot v3.0
     test_trials = {
       type: jsPsychMouselabMDP,
       // display: $('#jspsych-target')
@@ -1371,7 +1377,7 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
       },
       stateDisplay: 'click',
       accumulateReward: true,
-      wait_for_click: true,
+      wait_for_click: false,
       scoreShift: 5,
       minTime: minimumTime,
       stateBorder: function() {
