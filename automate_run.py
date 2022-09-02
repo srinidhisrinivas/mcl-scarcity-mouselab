@@ -6,8 +6,15 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import traceback
 
-num_automations_done = 1
-num_automations_to_do = 3
+debug = False
+
+num_stroop_blocks = 5
+num_stroop_trials = 6
+
+num_mdp_trials = 2
+
+num_automations_done = 18
+num_automations_to_do = 2
 
 stroop_1_block = 0
 stroop_1_trial = 0
@@ -21,7 +28,8 @@ for run_num in range(num_automations_done + 1, num_automations_done + num_automa
     name = "automated{}".format(run_num)
     print("Running {}".format(name))
     link = "https://mcl-scarcity.herokuapp.com/turkprime?hitId={}&assignmentId={}&workerId={}&mode=live".format(name,name,name)
-    # link = "http://localhost:22362/turkprime?hitId={}&assignmentId={}&workerId={}&mode=live".format(name,name,name)
+    if debug:
+        link = "http://localhost:22362/turkprime?hitId={}&assignmentId={}&workerId={}&mode=live".format(name,name,name)
     try:
         browser = webdriver.Chrome()
         browser.get(link)
@@ -50,10 +58,10 @@ for run_num in range(num_automations_done + 1, num_automations_done + num_automa
         browser.find_element(By.ID, 'jspsych-instructions-next').send_keys(Keys.ENTER)
         myElem = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID, 'jspsych-instructions-next')))
         browser.find_element(By.ID, 'jspsych-instructions-next').send_keys(Keys.ENTER)
-        for stroop_1_block in range(5):
+        for stroop_1_block in range(num_stroop_blocks):
             myElem = WebDriverWait(browser, 3).until(EC.visibility_of_element_located((By.ID, "jspsych-html-keyboard-response-stimulus")))
             browser.find_element(By.ID, 'jspsych-target').send_keys(Keys.SPACE)
-            for stroop_1_trial in range(90):
+            for stroop_1_trial in range(num_stroop_trials):
                 elem = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'stroop-trial')))
                 browser.find_element(By.ID, 'jspsych-target').send_keys("R")
 
@@ -102,7 +110,7 @@ for run_num in range(num_automations_done + 1, num_automations_done + num_automa
         myElem = WebDriverWait(browser, 3).until(EC.visibility_of_element_located((By.ID, "jspsych-html-keyboard-response-stimulus")))
         browser.find_element(By.ID, 'jspsych-target').send_keys(Keys.SPACE)
         time.sleep(3)
-        for mdp_trial in range(30):
+        for mdp_trial in range(num_mdp_trials):
             time.sleep(1)
             myElem = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID, 'mouselab-canvas')))
             browser.find_element(By.ID, 'jspsych-target').send_keys(Keys.ARROW_RIGHT)
@@ -127,10 +135,10 @@ for run_num in range(num_automations_done + 1, num_automations_done + num_automa
 
         myElem = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID, 'jspsych-instructions-next')))
         browser.find_element(By.ID, 'jspsych-instructions-next').send_keys(Keys.ENTER)
-        for stroop_2_block in range(5):
+        for stroop_2_block in range(num_stroop_blocks):
             myElem = WebDriverWait(browser, 3).until(EC.visibility_of_element_located((By.ID, "jspsych-html-keyboard-response-stimulus")))
             browser.find_element(By.ID, 'jspsych-target').send_keys(Keys.SPACE)
-            for stroop_2_trial in range(90):
+            for stroop_2_trial in range(num_stroop_trials):
                 elem = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'stroop-trial')))
                 browser.find_element(By.ID, 'jspsych-target').send_keys("R")
 
@@ -150,15 +158,19 @@ for run_num in range(num_automations_done + 1, num_automations_done + num_automa
 
         myElem = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'jspsych-btn')))
         browser.find_element(By.CLASS_NAME, 'jspsych-btn').send_keys(Keys.ENTER)
+        print("\nFinished run {}".format(run_num))
 
+        browser.switch_to.window(original_window)
+        time.sleep(5)
         browser.quit()
     except Exception as e:
         print("\nErrored out on run number {}".format(run_num))
         traceback.print_exc()
-        print("Stroop 1 blocks: " + stroop_1_block)
-        print("Stroop 1 trials: " + stroop_1_trial)
-        print("MDP practice trials: " + mdp_prac_trial)
-        print("MDP trials: " + mdp_trial)
-        print("Stroop 2 blocks: " + stroop_2_block)
-        print("Stroop 2 trials: " + stroop_2_trial)
+        print("Stroop 1 blocks: " + str(stroop_1_block))
+        print("Stroop 1 trials: " + str(stroop_1_trial))
+        print("MDP practice trials: " + str(mdp_prac_trial))
+        print("MDP trials: " + str(mdp_trial))
+        print("Stroop 2 blocks: " + str(stroop_2_block))
+        print("Stroop 2 trials: " + str(stroop_2_trial))
+        continue
 

@@ -62,7 +62,9 @@ BONUS_RATE = .002
 if DEBUG
   NUM_TEST_TRIALS = 10
 else
+  # TODO: 30 trials for full experiment
   NUM_TEST_TRIALS = 30
+  #NUM_TEST_TRIALS = 2
 
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
@@ -74,7 +76,10 @@ NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 # Convert MDP trials to stroop trials
 MDP_TO_STROOP_CONVERSION = 10
 MAX_MDP_BLOCK_LENGTH = 30
+# TODO: 100 trials for full experiment
 MAX_STROOP_BLOCK_LENGTH = 100
+# MAX_STROOP_BLOCK_LENGTH = 6
+
 if DEBUG
   MAX_STROOP_BLOCK_LENGTH = 10
   MAX_MDP_BLOCK_LENGTH = 5
@@ -1363,7 +1368,14 @@ initializeExperiment = ->
   secret_code_trial =
     type: jsPsychHtmlButtonResponse
     choices: ['Finish HIT']
-    stimulus: () -> "The secret code is: <br><br><strong>" + PARAMS.CODE.toUpperCase() + "</strong><br><br> Please press the 'Finish HIT' button once you've copied it down to paste in the original window."
+    stimulus: () -> """
+  The secret code is: <br><br><strong>" + PARAMS.CODE.toUpperCase() + "</strong>
+
+      <br><br>
+
+  Once you have copied this down, please <strong>press the 'Finish HIT' button</strong> and <strong>wait for the original webpage to tell you that you can close the window.</strong> If you close it before the webpage prompts you to, your progress may not be saved!
+
+  """
 
   experiment_timeline.push(secret_code_trial)
   experiment_timeline.push({type:jsPsychFullscreen, fullscreen_mode:false, delay_after:1000})
