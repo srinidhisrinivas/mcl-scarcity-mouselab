@@ -219,7 +219,26 @@ Press the button to resubmit.
   on_data_update: function(data) {
     // console.log 'data', data
     psiturk.recordTrialData(data);
-    return psiturk.saveData();
+    return psiturk.saveData({
+      success: function() {
+        var xhr;
+        xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        return xhr.send(JSON.stringify({
+          success: true
+        }));
+      },
+      error: function() {
+        var xhr;
+        xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        return xhr.send(JSON.stringify({
+          success: false
+        }));
+      }
+    });
   }
 });
 

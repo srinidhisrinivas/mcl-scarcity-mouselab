@@ -9,21 +9,23 @@ import traceback
 debug = False
 
 num_stroop_blocks = 5
-num_stroop_trials = 6
+num_stroop_trials = 90
 
-num_mdp_trials = 2
+num_mdp_trials = 30
 
-num_automations_done = 18
-num_automations_to_do = 2
+num_automations_done = 33
+num_automations_to_do = 5
 
-stroop_1_block = 0
-stroop_1_trial = 0
-stroop_2_block = 0
-stroop_2_trial = 0
-mdp_prac_trial = 0
-mdp_trial = 0
+
 
 for run_num in range(num_automations_done + 1, num_automations_done + num_automations_to_do + 1):
+
+    stroop_1_block = 0
+    stroop_1_trial = 0
+    stroop_2_block = 0
+    stroop_2_trial = 0
+    mdp_prac_trial = 0
+    mdp_trial = 0
 
     name = "automated{}".format(run_num)
     print("Running {}".format(name))

@@ -157,7 +157,22 @@ jsPsych = initJsPsych(
     on_data_update: (data) ->
       # console.log 'data', data
       psiturk.recordTrialData data
-      psiturk.saveData()
+      psiturk.saveData({
+        success: () ->
+          xhr = new XMLHttpRequest()
+          xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify({
+            success: true
+          }))
+        error: () ->
+          xhr = new XMLHttpRequest()
+          xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify({
+            success: false
+          }))
+      })
 )
 psiturk = new PsiTurk uniqueId, adServerLoc, mode
 saveData = ->
