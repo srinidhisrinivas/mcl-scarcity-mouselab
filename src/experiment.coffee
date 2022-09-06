@@ -30,6 +30,7 @@ if mode is "{{ mode }}"
 
   CONDITION = 0
 
+# TODO: Uncomment for full experiment
 # REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
 # mcl_scarcity_length_pilot_v2.1
 # Length pilot 2.1
@@ -40,8 +41,6 @@ COST_FORMATTED = COST.toFixed(2);
 COST_ANSWERS = ["There is no cost for clicking on nodes.", "The cost for clicking on nodes varies between nodes.", "The cost is always $#{COST_FORMATTED}.", "It is more costly to inspect further nodes."]
 COST_QUESTION = "Which of the following is true about the cost of clicking on nodes?"
 COST_CORRECT= "The cost is always $#{COST_FORMATTED}."
-
-# DEPTH = [5,40,80][CONDITION]
 
 REPETITIONS = 0 #tracks trials in instructions quiz
 MAX_REPETITIONS = 4 #max tries they get at instructions quiz
@@ -66,8 +65,13 @@ else
   NUM_TEST_TRIALS = 30
   #NUM_TEST_TRIALS = 2
 
+# Number of trials in maximum scarcity condition
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
+
+# Number of trials in current condition
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
+
+# Calculate number of distractor trials
 NUM_UNREWARDED_TRIALS = NUM_MDP_TRIALS - NUM_TEST_TRIALS
 NUM_DISTRACTOR_TRIALS = NUM_TRIALS - NUM_MDP_TRIALS
 NUM_DISTRACTOR_TRIALS_1 = Math.floor NUM_DISTRACTOR_TRIALS / 2
@@ -76,7 +80,7 @@ NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 # Convert MDP trials to stroop trials
 MDP_TO_STROOP_CONVERSION = 10
 MAX_MDP_BLOCK_LENGTH = 30
-# TODO: 100 trials for full experiment
+# TODO: 100 trials block length for full experiment
 MAX_STROOP_BLOCK_LENGTH = 100
 # MAX_STROOP_BLOCK_LENGTH = 6
 
@@ -84,16 +88,19 @@ if DEBUG
   MAX_STROOP_BLOCK_LENGTH = 10
   MAX_MDP_BLOCK_LENGTH = 5
 
+# Divide the Mouselab trials into blocks
 NUM_MDP_BLOCKS = Math.ceil NUM_MDP_TRIALS / MAX_MDP_BLOCK_LENGTH
 MDP_BLOCKS = new Array(NUM_MDP_BLOCKS).fill(Math.floor NUM_MDP_TRIALS / NUM_MDP_BLOCKS)
 REMAINDER_TRIALS = NUM_MDP_TRIALS % NUM_MDP_BLOCKS
 for i in [0...REMAINDER_TRIALS]
   MDP_BLOCKS[i] += 1
 
+# Divide the first set of stroop trials into blocks
 NUM_DISTRACTOR_TRIALS_1 *= MDP_TO_STROOP_CONVERSION
 NUM_BLOCKS_1 = Math.ceil NUM_DISTRACTOR_TRIALS_1 / MAX_STROOP_BLOCK_LENGTH
 STROOP_BLOCKS_1 = new Array(NUM_BLOCKS_1).fill(Math.ceil NUM_DISTRACTOR_TRIALS_1 / NUM_BLOCKS_1)
 
+# Divide the first set of stroop trials into blocks
 NUM_DISTRACTOR_TRIALS_2 *= MDP_TO_STROOP_CONVERSION
 NUM_BLOCKS_2 = Math.ceil NUM_DISTRACTOR_TRIALS_2 / MAX_STROOP_BLOCK_LENGTH
 STROOP_BLOCKS_2 = new Array(NUM_BLOCKS_2).fill(Math.ceil NUM_DISTRACTOR_TRIALS_2 / NUM_BLOCKS_2)
@@ -113,7 +120,6 @@ getTrials = undefined
 getScarcityTrials = undefined
 getPracticeTrials = undefined
 getDistractorTrials = undefined
-getRevealedTrials = undefined
 createQuestionnaires = undefined
 getStroopTrials = undefined
 bonus_text = undefined
@@ -122,6 +128,7 @@ final_nodes = undefined
 
 jsPsych = initJsPsych(
     display_element: 'jspsych-target'
+    # Saving data on finishing the experiment
     on_finish: ->
       if DEBUG and not DEBUG_SUBMIT
         jsPsych.data.displayData()
@@ -154,9 +161,12 @@ jsPsych = initJsPsych(
         psiturk.recordUnstructuredData 'final_score', SCORE
         save_data()
 
+    # Saving data after each trial
     on_data_update: (data) ->
       # console.log 'data', data
       psiturk.recordTrialData data
+      # Send POST request to Heroku based on success or failure of syncing data
+      # Currently not sure how to read the JSON information in the received POST request in Heroku
       psiturk.saveData({
         success: () ->
           xhr = new XMLHttpRequest()
@@ -227,11 +237,11 @@ $(window).on 'load', ->
       id = "#{PARAMS.branching}"
 
     QUESTIONNAIRES = loadJson "static/questionnaires/example.txt"
-
     STRUCTURE = loadJson "static/json/structure/#{id}.json"
     TRIALS = loadJson "static/json/rewards/#{id}.json"
     console.log "loaded #{TRIALS?.length} trials"
 
+    # Create practice mouselab trials
     getPracticeTrials = (numTrials) ->
       templateTrial = TRIALS[0]["stateRewards"]
       trials = []
@@ -247,6 +257,7 @@ $(window).on 'load', ->
         trials.push(trialObj)
       return trials
 
+    # Create test trials for mouselab
     getScarcityTrials = (numRewarded, numUnrewarded) ->
       shuffledTrials = _.shuffle TRIALS
       rewardedTrials = shuffledTrials.slice(0, numRewarded)
@@ -262,6 +273,7 @@ $(window).on 'load', ->
         trial["trial_id"] = "mdp_" + trial["trial_id"]
       return _.shuffle trialsJoined
 
+    # Create stroop trials
     getStroopTrials = (num, id) ->
       numCongruent = 0
       numIncongruent = 0
@@ -342,18 +354,6 @@ $(window).on 'load', ->
         idx += n
         t.slice(idx-n, idx)
 
-    getRevealedTrials = (n, early_type) -> #if we had newer jspsych we wouldn't have to do this
-      REVEALED_TRIALS = _.map(TRIALS, _.clone);
-      for REVEALED_TRIAL in REVEALED_TRIALS
-        # if (Math.random()<.5)
-        if (!early_type)
-        then REVEALED_TRIAL["revealed_states"] = early_nodes
-        else REVEALED_TRIAL["revealed_states"] = final_nodes
-      t = _.shuffle REVEALED_TRIALS
-      idx = 0
-      idx += n
-      t.slice(idx-n, idx)
-
     if TALK
       createStartButton()
       clearTimeout loadTimeout
@@ -365,23 +365,6 @@ $(window).on 'load', ->
         .catch ->
           clearTimeout loadTimeout
           $('#data-error').show()
-
-createQuestionnaires = (quest_id, quest_data) ->
-  sum_fn = (a,b) -> a+b.length+5
-  length_of_options = Math.max \
-                (quest_data["questions"].map (question) -> question.labels.reduce sum_fn, 0)...
-  horizontal = (length_of_options<65)
-
-  questionnaire_trial =
-    type: jsPsychSurveyLikert
-    randomize_question_order: false
-    preamble: quest_data["preamble"]
-    questions: quest_data["questions"].map (question) -> {prompt: question.prompt, name: question.question_id, labels: question.labels, required:true}
-    data:
-      name: quest_data["name"]
-      reverse_coded: quest_data["questions"].map (question) -> question['reverse_coded']
-      question_id: quest_data["questions"].map (question) -> question['question_id']
-
 
 bonus_text = (long) ->
     # if PARAMS.bonusRate isnt .01
@@ -396,7 +379,7 @@ createStartButton = ->
   initializeExperiment()
   return
 
-
+# Setting up the jsPsych experiment
 initializeExperiment = ->
   $('#jspsych-target').html ''
 
@@ -405,12 +388,17 @@ initializeExperiment = ->
   #  ========= EXPERIMENT ========= #
   #  ============================== #
 
+  # Timeline elements for conditions where there are no distractor trials (most scarce)
+  # and conditions where there are distractor trials (any other condition)
   no_distractor = {}
   distractor = {}
 
+  # Timeline elements for conditions where there is no scarcity (control condition)
+  # and conditions where there is scarcity (any other condition)
   no_scarce = {}
   scarce = {}
 
+  # Opening instructions for condition with no distractor trials
   no_distractor["experiment_instructions"] = {
     type: jsPsychInstructions
     on_start: () ->
@@ -437,6 +425,37 @@ initializeExperiment = ->
       """
     ]
   }
+
+  # Opening instructions for any condition with distractor trials
+  distractor["experiment_instructions"] = {
+    type: jsPsychInstructions
+    data:
+      trial_id: "exp_instructions_distractor"
+    on_start: () ->
+      psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
+    show_clickable_nav: true
+    pages: -> [
+      """
+        <h1> Instructions </h1>
+
+        In this HIT, you will play multiple rounds of two different games.
+
+        <br><br>
+        First, you will play #{NUM_DISTRACTOR_TRIALS_1} rounds of the <em>Color Word</em> game. After these, you will play #{NUM_MDP_TRIALS} rounds of the <em>Web of Cash</em> game. Finally, you will play another #{NUM_DISTRACTOR_TRIALS_2} rounds of the same <em>Color Word</em> game.
+
+        <br><br>
+        Before each game, you will be given instructions on how to play the game. You may also have to answer some questions to check your understanding of the game.
+
+        <br><br>
+        If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
+
+        <br><br>
+        <strong>NOTE: </strong> Please complete the experiment within one sitting without closing or refreshing the page. If you do either of these, you will no longer be able to get back into the experiment to complete it.
+      """
+    ]
+  }
+
+  # Mouselab instructions for all conditions
   mouselab_instructions_1 = {
     type: jsPsychInstructions
     data:
@@ -514,6 +533,7 @@ initializeExperiment = ->
     }
 
     # TODO: Update to wait_for_click: true - pilot v3.1
+  # Practice Mouselab trials for all conditions
   practice_trials = {
     type: jsPsychMouselabMDP
 # display: $('#jspsych-target')
@@ -545,6 +565,7 @@ initializeExperiment = ->
       pracTrialCount = 0
   }
 
+  # Second set of mouselab instructions for any condition with scarcity
   scarce["mouselab_instructions_2"] = {
     type: jsPsychInstructions
     data:
@@ -593,6 +614,7 @@ initializeExperiment = ->
     ]
   }
 
+  # Second set of mouselab instructions for condition without any scarcity
   no_scarce["mouselab_instructions_2"] = {
     type: jsPsychInstructions
     data:
@@ -641,34 +663,7 @@ initializeExperiment = ->
     ]
   }
 
-  distractor["experiment_instructions"] = {
-    type: jsPsychInstructions
-    data:
-      trial_id: "exp_instructions_distractor"
-    on_start: () ->
-      psiturk.finishInstructions() #started instructions, so no longer worth keeping in database
-    show_clickable_nav: true
-    pages: -> [
-      """
-        <h1> Instructions </h1>
-
-        In this HIT, you will play multiple rounds of two different games.
-
-        <br><br>
-        First, you will play #{NUM_DISTRACTOR_TRIALS_1} rounds of the <em>Color Word</em> game. After these, you will play #{NUM_MDP_TRIALS} rounds of the <em>Web of Cash</em> game. Finally, you will play another #{NUM_DISTRACTOR_TRIALS_2} rounds of the same <em>Color Word</em> game.
-
-        <br><br>
-        Before each game, you will be given instructions on how to play the game. You may also have to answer some questions to check your understanding of the game.
-
-        <br><br>
-        If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
-
-        <br><br>
-        <strong>NOTE: </strong> Please complete the experiment within one sitting without closing or refreshing the page. If you do either of these, you will no longer be able to get back into the experiment to complete it.
-      """
-    ]
-  }
-
+  # Instructions for stroop task (only in conditions with distractor trials)
   distractor["color_game_instructions"] = {
     type: jsPsychInstructions
     data:
@@ -706,8 +701,10 @@ initializeExperiment = ->
 
   # Stroop block structure of first set of distractor trials
   distractor["distractor_1_timeline"] = []
+  # Each block has a ready screen and a set of trials
   for numBlockTrials, idx in STROOP_BLOCKS_1
     ready_screen = undefined
+    # First block has different text in the ready screen than other blocks
     if idx == 0
       ready_screen =
         type: jsPsychHtmlKeyboardResponse
@@ -745,18 +742,24 @@ initializeExperiment = ->
         <div style='text-align: center;'>(If the experiment doesn't continue, try clicking on the text and then pressing <code>space</code>.)</div>
         """
 
+    # Add ready screen to timeline
     distractor["distractor_1_timeline"].push ready_screen
+
+    # Create the stroop trials
     stroop_trials =
       type: jsPsychHtmlKeyboardResponse,
       on_timeline_start: ->
+        # Turn background black and add elements "CORRECT" and "INCORRECT" when stroop block starts
         $('body').css('background-color', 'black')
         $('body').append("<p id='correct' class='stroop-correct'>CORRECT</p>")
         $('body').append("<p id='wrong' class='stroop-wrong'>INCORRECT</p>")
       on_timeline_finish: ->
+        # Turn background black and remove elements "CORRECT" and "INCORRECT" when stroop block ends
         $('body').css('background-color', 'white')
         $('#correct').remove()
         $('#wrong').remove()
       on_load: ->
+        # Hide elements "CORRECT" and "INCORRECT" when stroop trial begins
         $('#stroop-text').show()
         $('#correct').hide()
         $('#wrong').hide()
@@ -765,6 +768,8 @@ initializeExperiment = ->
       timeline: getStroopTrials numBlockTrials, 1
       css_classes: ['stroop-trial']
       on_finish: (data) ->
+        # Show the correctness of response after input
+        # lasts for 500ms (post_trial_gap)
         $('#stroop-text').hide()
         if data.response.toLowerCase() == data.correct_response.toLowerCase()
           $('#correct').show()
@@ -844,6 +849,7 @@ initializeExperiment = ->
     distractor["distractor_2_timeline"].push stroop_trials
 
 
+  # Screen indicating end of first set of distractor trials
   distractor["finish_distractor"] = {
     type: jsPsychInstructions
     data:
@@ -863,6 +869,7 @@ initializeExperiment = ->
     ]
   }
 
+  # Screen indicating end of second set of distractor trials
   distractor["finish_distractor_2"] = {
     type: jsPsychInstructions
     data:
@@ -881,6 +888,8 @@ initializeExperiment = ->
       """
     ]
   }
+
+  # Screen indicating end of mouselab trials when there is another set of distractor trials to follow
   distractor["finish_webofcash"] = {
     type: jsPsychInstructions
     data:
@@ -903,8 +912,7 @@ initializeExperiment = ->
     ]
   }
 
-
-  #instructions quiz -- they have limited tries (MAX_REPETITIONS) here
+  # Mouselab instructions quiz for scarce conditions (differs only in last question)
   scarce["mouselab_quiz"] = {
     preamble: ->  """
       <h1> Quiz </h1>
@@ -932,6 +940,7 @@ initializeExperiment = ->
     }
   }
 
+  # Mouselab instructions quiz for non-scarce conditions (differs only in last question)
   no_scarce["mouselab_quiz"] = {
     preamble: ->  """
       <h1> Quiz </h1>
@@ -967,6 +976,7 @@ initializeExperiment = ->
       return INSTRUCTIONS_FAILED
   }
 
+  # Looping mouselab instructions until quiz is passed (scarce conditions)
   scarce["mouselab_instruct_loop"] =
     timeline: [fullscreen, mouselab_instructions_1, practice_trials, scarce["mouselab_instructions_2"], scarce["mouselab_quiz"]]
     conditional_function: ->
@@ -987,6 +997,7 @@ initializeExperiment = ->
       psiturk.saveData()
       return false
 
+  # Looping mouselab instructions until quiz is passed (control condition)
   no_scarce["mouselab_instruct_loop"] =
     timeline: [fullscreen, mouselab_instructions_1, practice_trials, no_scarce["mouselab_instructions_2"], no_scarce["mouselab_quiz"]]
     conditional_function: ->
@@ -1005,7 +1016,7 @@ initializeExperiment = ->
       psiturk.saveData()
       return false
 
-
+  # Final mouselab quiz for conditions without distractor trials
   no_distractor["final_quiz"] =
     on_start: ->
       SCORE = Math.round(SCORE * 100) / 100
@@ -1034,7 +1045,7 @@ initializeExperiment = ->
       {prompt: "How motivated were you to perform the task?", options: ["Very unmotivated", "Slightly unmotivated", "Neither motivated nor unmotivated", "Slightly motivated", "Very motivated"], required: true}
     ]
 
-
+  # Final mouselab quiz for conditions with second set of distractor trials
   distractor["final_quiz"] =
     preamble: -> """
       <h1>Quiz</h1>
@@ -1062,10 +1073,13 @@ initializeExperiment = ->
   if DEBUG
     minimumTime = null
 
-  # Test trial structure
+  # Test trial block structure for all conditions
+  # Create all MDP trials
   MDP_TRIALS = getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
   test_timeline = []
   pointer_idx = 0
+
+  # Divide all MDP trials across blocks
   for numBlockTrials, idx in MDP_BLOCKS
     ready_screen = undefined
     if idx == 0
@@ -1113,6 +1127,7 @@ initializeExperiment = ->
     block_trials = MDP_TRIALS.slice(pointer_idx, pointer_idx + numBlockTrials)
     pointer_idx += numBlockTrials
     # TODO: Update to wait_for_click true - pilot v3.1
+    # Define jsPsych timeline for current block of MDP trials
     test_trials = {
       type: jsPsychMouselabMDP
 # display: $('#jspsych-target')
@@ -1142,35 +1157,8 @@ initializeExperiment = ->
         trialCount = 0
     }
     test_timeline.push test_trials
-  # All scarcity trials
-#  test = {
-#    type: jsPsychMouselabMDP
-#    # display: $('#jspsych-target')
-#    graph: STRUCTURE.graph
-#    layout: STRUCTURE.layout
-#    initial: STRUCTURE.initial
-#    num_trials: NUM_MDP_TRIALS
-#    stateClickCost: () -> COST
-#    stateDisplay: 'click'
-#    accumulateReward: true
-#    wait_for_click: true
-#    scoreShift: 5
-#    minTime: minimumTime
-#    stateBorder : () -> "rgb(187,187,187,1)"#getColor
-#    playerImage: 'static/images/spider.png'
-#    # trial_id: jsPsych.timelineVariable('trial_id',true)
-#    blockName: 'test'
-#    lowerMessage: """
-#      Click on the nodes to reveal their values.<br>
-#      Move with the arrow keys after you are done clicking.
-#        """
-#    timeline: getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
-#    trialCount: () -> trialCount
-#    on_finish: () ->
-#      trialCount += 1
-#  }
 
-  #final screen if participants didn't pass instructions quiz
+  #final screen if participants didn't pass instructions quiz (control condition)
   no_distractor["finish_fail"] = {
        type: jsPsychSurveyText
        data:
@@ -1195,6 +1183,7 @@ initializeExperiment = ->
        button_label: 'Continue on to secret code'
      }
 
+  #final screen if participants didn't pass instructions quiz (distractor conditions)
   distractor["finish_fail"] = {
     type: jsPsychSurveyText
     data:
@@ -1219,7 +1208,7 @@ initializeExperiment = ->
     button_label: 'Continue on to secret code'
   }
 
-  #final screen, if participants actually participated
+  #final screen, if participants actually participated, regardless of condition
   finish = {
     type: jsPsychSurveyText
     preamble: ->  """
@@ -1239,7 +1228,7 @@ initializeExperiment = ->
     button_label: 'Continue on to secret code'
   }
 
-  #demographics
+  #demographics, regardless of condition
   demographics = {
     type: jsPsychSurveyHtmlForm
     preamble: "<h1>Demographics</h1> <br> Please answer the following questions.",
@@ -1297,7 +1286,7 @@ initializeExperiment = ->
 
 
   # if the subject passes the quiz, they continue and can earn a bonus for their performance
-  # createQuestionnaires("pptlr", QUESTIONNAIRES["pptlr"])
+  # MDP trials and end if quiz is passed in most scarce condition (no distractor)
   no_distractor["if_node2"] =
     timeline: [test_timeline..., no_distractor["final_quiz"], demographics, finish]
     conditional_function: ->
@@ -1314,6 +1303,7 @@ initializeExperiment = ->
       else
         return true
 
+  # MDP trials and second set of distractors if quiz is passed in distractor conditions
   distractor["if_node2"] =
     timeline: [test_timeline..., distractor['final_quiz'], distractor["finish_webofcash"],
       distractor["color_game_instructions"], distractor["distractor_2_timeline"]...,
@@ -1335,10 +1325,9 @@ initializeExperiment = ->
         return true
 
 
-  # experiment timeline up until now (conditional function properties of nodes keep if_node1 and if_node2 working as we want them)
 
   experiment_timeline = undefined
-  # No scarcity and distractor trials present
+  # No scarcity and distractor trials present (control condition)
   if CONDITION == 0
     experiment_timeline = [
       distractor["experiment_instructions"],
@@ -1351,7 +1340,7 @@ initializeExperiment = ->
       distractor["if_node2_debug"]
     ]
   else if CONDITION == (REWARDED_PROPORTIONS.length - 1)
-    # Scarcity and no distractor trials present
+    # Scarcity and no distractor trials present (most scarce condition)
     experiment_timeline = [
       no_distractor["experiment_instructions"],
       scarce["mouselab_instruct_loop"],
@@ -1360,7 +1349,7 @@ initializeExperiment = ->
       no_distractor["if_node2_debug"]
     ]
   else
-    # Scarcity and distractor trials present
+    # Scarcity and distractor trials present (any condition in between)
     experiment_timeline = [
       distractor["experiment_instructions"],
       distractor["color_game_instructions"],
@@ -1402,6 +1391,7 @@ initializeExperiment = ->
     return Math.min(Math.max(0, bonus),MAX_AMOUNT)
 
   #saving, finishing functions
+  # These functions are defined once again init jsPsych - not used here
   reprompt = null
   save_data = ->
     psiturk.saveData
