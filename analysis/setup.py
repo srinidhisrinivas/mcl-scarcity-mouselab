@@ -1,0 +1,32 @@
+from setuptools import setup
+
+setup(
+    name="mouselab",
+    version="0.0.1",
+    packages=["mouselab", "mouselab.envs"],
+    url="",
+    license="",
+    author="Fred Callaway, Sayan Gul, Yash Raj Jain",
+    author_email="",
+    description="",
+    setup_requires=["wheel"],
+    install_requires=[
+        "numpy",
+        "scipy",
+        "contexttimer",
+        "dill",
+        "gym",
+        "IPython",
+        "joblib",
+        "keras",
+        "matplotlib",
+        "more_itertools",
+        "networkx",
+        "pandas",
+        "pydantic",
+        "seaborn",
+        "toolz",
+        "tqdm",
+        "parameterized",
+    ],
+)

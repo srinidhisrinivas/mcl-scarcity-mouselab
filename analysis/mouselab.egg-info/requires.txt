@@ -1,0 +1,17 @@
+numpy
+scipy
+contexttimer
+dill
+gym
+IPython
+joblib
+keras
+matplotlib
+more_itertools
+networkx
+pandas
+pydantic
+seaborn
+toolz
+tqdm
+parameterized
