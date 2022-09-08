@@ -1,5 +1,7 @@
 env/*
-results/aenv/*
+analysis/aenv/*
+analysis/mouselab*
+analysis/.eggs/*
 *.pyc
 .psiturk_history
 server.log
