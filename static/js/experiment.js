@@ -69,7 +69,7 @@ N_TRIAL = void 0;
 
 INSTRUCTIONS_FAILED = false;
 
-SCORE = [0, 0, 0, 0, 0, 0][CONDITION];
+SCORE = [0, 0, 0, 0, 0, 0, 0, 0][CONDITION];
 
 STROOP_1_SCORE = 0;
 
@@ -81,10 +81,9 @@ if (DEBUG) {
   NUM_TEST_TRIALS = 10;
 } else {
   // TODO: 30 trials for full experiment
-  NUM_TEST_TRIALS = 30;
+  //NUM_TEST_TRIALS = 30
+  NUM_TEST_TRIALS = 2;
 }
-
-//NUM_TEST_TRIALS = 2
 
 // Number of trials in maximum scarcity condition
 NUM_TRIALS = Math.ceil(NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]);
@@ -107,9 +106,9 @@ MDP_TO_STROOP_CONVERSION = 10;
 MAX_MDP_BLOCK_LENGTH = 30;
 
 // TODO: 100 trials block length for full experiment
-MAX_STROOP_BLOCK_LENGTH = 100;
+//MAX_STROOP_BLOCK_LENGTH = 100
+MAX_STROOP_BLOCK_LENGTH = 6;
 
-// MAX_STROOP_BLOCK_LENGTH = 6
 if (DEBUG) {
   MAX_STROOP_BLOCK_LENGTH = 10;
   MAX_MDP_BLOCK_LENGTH = 5;
@@ -224,28 +223,26 @@ Press the button to resubmit.
   },
   // Saving data after each trial
   on_data_update: function(data) {
-    // console.log 'data', data
+    console.log('data', data);
     psiturk.recordTrialData(data);
     // Send POST request to Heroku based on success or failure of syncing data
     // Currently not sure how to read the JSON information in the received POST request in Heroku
     return psiturk.saveData({
       success: function() {
-        var xhr;
-        xhr = new XMLHttpRequest();
-        xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        return xhr.send(JSON.stringify({
-          success: true
-        }));
+        var post_path;
+        post_path = "update_" + uniqueId + "_" + data.trial_index;
+        return $.ajax(post_path, {
+          type: "POST",
+          data: {"data-update": "data-update"}
+        });
       },
       error: function() {
-        var xhr;
-        xhr = new XMLHttpRequest();
-        xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        return xhr.send(JSON.stringify({
-          success: false
-        }));
+        var post_path;
+        post_path = "updatefail_" + uniqueId + "_" + data.trial_index;
+        return $.ajax(post_path, {
+          type: "POST",
+          data: {"data-update": "data-update"}
+        });
       }
     });
   }
@@ -297,7 +294,7 @@ $(window).on('load', function() {
     var id;
     console.log('Loading data');
     PARAMS = {
-      CODE: "CD8YV6VN",
+      CODE: "C6DMOQA6",
       MIN_TIME: 7,
       inspectCost: COST,
       startTime: Date(Date.now()),
@@ -633,7 +630,7 @@ Click 'Next' to start with the practice rounds.`
     },
     stateDisplay: 'click',
     accumulateReward: true,
-    wait_for_click: false,
+    wait_for_click: true,
     withholdReward: false,
     scoreShift: 2,
     stateBorder: function() {
@@ -1392,7 +1389,7 @@ In the next block, you will complete another ${numBlockTrials} rounds of this ga
       },
       stateDisplay: 'click',
       accumulateReward: true,
-      wait_for_click: false,
+      wait_for_click: true,
       scoreShift: 5,
       minTime: minimumTime,
       stateBorder: function() {
@@ -1456,7 +1453,7 @@ Before you submit the HIT, we are interested in knowing some demographic info, a
         rows: 10
       }
     ],
-    button_label: 'Continue on to secret code'
+    button_label: 'Continue'
   };
   //final screen if participants didn't pass instructions quiz (distractor conditions)
   distractor["finish_fail"] = {
@@ -1498,7 +1495,7 @@ Before you submit the HIT, we are interested in knowing some demographic info, a
         rows: 10
       }
     ],
-    button_label: 'Continue on to secret code'
+    button_label: 'Continue'
   };
   //final screen, if participants actually participated, regardless of condition
   finish = {
@@ -1528,7 +1525,7 @@ Please briefly answer the questions below before you submit the HIT.`;
         rows: 10
       }
     ],
-    button_label: 'Continue on to secret code'
+    button_label: 'Continue'
   };
   //demographics, regardless of condition
   demographics = {
@@ -1658,11 +1655,7 @@ Please briefly answer the questions below before you submit the HIT.`;
     type: jsPsychHtmlButtonResponse,
     choices: ['Finish HIT'],
     stimulus: function() {
-      return `The secret code is: <br><br><strong>" + PARAMS.CODE.toUpperCase() + "</strong>
-
-    <br><br>
-
-Once you have copied this down, please <strong>press the 'Finish HIT' button</strong> and <strong>wait for the original webpage to tell you that you can close the window.</strong> If you close it before the webpage prompts you to, your progress may not be saved!
+      return `Press 'Finish HIT' in order to reach the completion code. Once the data has been saved, you will receive the code either in this window or in the original browser window where you started the experiment.
 `;
     }
   };

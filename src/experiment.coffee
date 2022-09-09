@@ -53,7 +53,7 @@ TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
 INSTRUCTIONS_FAILED = false
-SCORE = [0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
+SCORE = [0, 0, 0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
 STROOP_1_SCORE = 0
 STROOP_2_SCORE = 0
 BONUS_RATE = .002
@@ -62,8 +62,8 @@ if DEBUG
   NUM_TEST_TRIALS = 10
 else
   # TODO: 30 trials for full experiment
-  NUM_TEST_TRIALS = 30
-  #NUM_TEST_TRIALS = 2
+  #NUM_TEST_TRIALS = 30
+  NUM_TEST_TRIALS = 2
 
 # Number of trials in maximum scarcity condition
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
@@ -81,8 +81,8 @@ NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 MDP_TO_STROOP_CONVERSION = 10
 MAX_MDP_BLOCK_LENGTH = 30
 # TODO: 100 trials block length for full experiment
-MAX_STROOP_BLOCK_LENGTH = 100
-# MAX_STROOP_BLOCK_LENGTH = 6
+#MAX_STROOP_BLOCK_LENGTH = 100
+MAX_STROOP_BLOCK_LENGTH = 6
 
 if DEBUG
   MAX_STROOP_BLOCK_LENGTH = 10
@@ -163,25 +163,23 @@ jsPsych = initJsPsych(
 
     # Saving data after each trial
     on_data_update: (data) ->
-      # console.log 'data', data
+      console.log 'data', data
       psiturk.recordTrialData data
       # Send POST request to Heroku based on success or failure of syncing data
       # Currently not sure how to read the JSON information in the received POST request in Heroku
       psiturk.saveData({
         success: () ->
-          xhr = new XMLHttpRequest()
-          xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
-          xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.send(JSON.stringify({
-            success: true
-          }))
+          post_path = "update_" + uniqueId + "_" + data.trial_index
+          return $.ajax(post_path, {
+            type: "POST",
+            data: {"data-update"}
+          });
         error: () ->
-          xhr = new XMLHttpRequest()
-          xhr.open("POST", "https://mcl-scarcity.herokuapp.com", true);
-          xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.send(JSON.stringify({
-            success: false
-          }))
+          post_path = "updatefail_" + uniqueId + "_" + data.trial_index
+          return $.ajax(post_path, {
+            type: "POST",
+            data: {"data-update"}
+          });
       })
 )
 psiturk = new PsiTurk uniqueId, adServerLoc, mode
@@ -219,7 +217,7 @@ $(window).on 'load', ->
   delay 300, ->
     console.log 'Loading data'
     PARAMS =
-      CODE : "CD8YV6VN"
+      CODE : "C6DMOQA6"
       MIN_TIME : 7
       inspectCost: COST
       startTime: Date(Date.now())
@@ -544,7 +542,7 @@ initializeExperiment = ->
     stateClickCost: () -> COST
     stateDisplay: 'click'
     accumulateReward: true
-    wait_for_click: false
+    wait_for_click: true
     withholdReward: false
     scoreShift: 2
     stateBorder : () -> "rgb(187,187,187,1)"#getColor
@@ -1138,7 +1136,7 @@ initializeExperiment = ->
       stateClickCost: () -> COST
       stateDisplay: 'click'
       accumulateReward: true
-      wait_for_click: false
+      wait_for_click: true
       scoreShift: 5
       minTime: minimumTime
       stateBorder : () -> "rgb(187,187,187,1)"#getColor
@@ -1180,7 +1178,7 @@ initializeExperiment = ->
          {prompt:'Are you colorblind?',required:true, rows:2}
          {prompt:'Additional comments?',required:false,rows:10}
        ]
-       button_label: 'Continue on to secret code'
+       button_label: 'Continue'
      }
 
   #final screen if participants didn't pass instructions quiz (distractor conditions)
@@ -1205,7 +1203,7 @@ initializeExperiment = ->
       {prompt:'Are you colorblind?',required:true, rows:2}
       {prompt:'Additional comments?',required:false,rows:10}
     ]
-    button_label: 'Continue on to secret code'
+    button_label: 'Continue'
   }
 
   #final screen, if participants actually participated, regardless of condition
@@ -1225,7 +1223,7 @@ initializeExperiment = ->
       {prompt: "After completing this HIT, did you realize that you had already participated in a Web of Cash HIT before? Don't worry, we won't penalize you based on your response here. We completely understand that it's hard to remember which HITs you have or haven't completed.", required: true, rows:5}
       {prompt: 'Additional comments?', required: false, rows:10}
     ]
-    button_label: 'Continue on to secret code'
+    button_label: 'Continue'
   }
 
   #demographics, regardless of condition
@@ -1373,11 +1371,7 @@ initializeExperiment = ->
     type: jsPsychHtmlButtonResponse
     choices: ['Finish HIT']
     stimulus: () -> """
-  The secret code is: <br><br><strong>" + PARAMS.CODE.toUpperCase() + "</strong>
-
-      <br><br>
-
-  Once you have copied this down, please <strong>press the 'Finish HIT' button</strong> and <strong>wait for the original webpage to tell you that you can close the window.</strong> If you close it before the webpage prompts you to, your progress may not be saved!
+    Press 'Finish HIT' in order to reach the completion code. Once the data has been saved, you will receive the code either in this window or in the original browser window where you started the experiment.
 
   """
 
