@@ -81,9 +81,10 @@ if (DEBUG) {
   NUM_TEST_TRIALS = 10;
 } else {
   // TODO: 30 trials for full experiment
-  //NUM_TEST_TRIALS = 30
-  NUM_TEST_TRIALS = 2;
+  NUM_TEST_TRIALS = 30;
 }
+
+//NUM_TEST_TRIALS = 2
 
 // Number of trials in maximum scarcity condition
 NUM_TRIALS = Math.ceil(NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]);
@@ -106,9 +107,9 @@ MDP_TO_STROOP_CONVERSION = 10;
 MAX_MDP_BLOCK_LENGTH = 30;
 
 // TODO: 100 trials block length for full experiment
-//MAX_STROOP_BLOCK_LENGTH = 100
-MAX_STROOP_BLOCK_LENGTH = 6;
+MAX_STROOP_BLOCK_LENGTH = 100;
 
+//MAX_STROOP_BLOCK_LENGTH = 6
 if (DEBUG) {
   MAX_STROOP_BLOCK_LENGTH = 10;
   MAX_MDP_BLOCK_LENGTH = 5;
