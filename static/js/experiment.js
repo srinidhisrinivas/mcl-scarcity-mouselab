@@ -21,18 +21,14 @@ X X X X X X X X X X X X X X X X X`);
 # =============================== #`);
   CONDITION = parseInt(condition);
   console.log(condition);
-  // mcl_scarcity_length_pilot_v2.1
-  CONDITION = 0;
 }
 
+// mcl_scarcity_length_pilot_v2.1
 if (mode === "{{ mode }}") {
   CONDITION = 0;
 }
 
-// TODO: Uncomment for full experiment
 // REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
-// mcl_scarcity_length_pilot_v2.1
-// Length pilot 2.1
 REWARDED_PROPORTIONS = [1, 0.25];
 
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION];
@@ -69,7 +65,7 @@ N_TRIAL = void 0;
 
 INSTRUCTIONS_FAILED = false;
 
-SCORE = [0, 0, 0, 0, 0, 0, 0, 0][CONDITION];
+SCORE = 0;
 
 STROOP_1_SCORE = 0;
 

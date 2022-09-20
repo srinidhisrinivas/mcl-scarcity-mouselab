@@ -23,17 +23,11 @@ else
   CONDITION = parseInt condition
   console.log condition
   # mcl_scarcity_length_pilot_v2.1
-  CONDITION = 0
-
 
 if mode is "{{ mode }}"
-
   CONDITION = 0
 
-# TODO: Uncomment for full experiment
 # REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
-# mcl_scarcity_length_pilot_v2.1
-# Length pilot 2.1
 REWARDED_PROPORTIONS = [1, 0.25]
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION]
 COST = REWARDED_PROP
@@ -53,7 +47,7 @@ TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
 INSTRUCTIONS_FAILED = false
-SCORE = [0, 0, 0, 0, 0, 0, 0, 0][CONDITION] #TODO EDIT MAX AMOUNT IF CHANGING THIS -- THIS IS TO MAKE CONDITIONS EQUAL
+SCORE = 0
 STROOP_1_SCORE = 0
 STROOP_2_SCORE = 0
 BONUS_RATE = .002
