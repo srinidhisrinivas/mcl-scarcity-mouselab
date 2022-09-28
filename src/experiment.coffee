@@ -89,6 +89,11 @@ REMAINDER_TRIALS = NUM_MDP_TRIALS % NUM_MDP_BLOCKS
 for i in [0...REMAINDER_TRIALS]
   MDP_BLOCKS[i] += 1
 
+MDP_BLOCKS_UNREWARDED = new Array(NUM_MDP_BLOCKS).fill(Math.floor NUM_UNREWARDED_TRIALS / NUM_MDP_BLOCKS)
+REMAINDER_TRIALS = NUM_UNREWARDED_TRIALS % NUM_MDP_BLOCKS
+for i in [0...REMAINDER_TRIALS]
+  MDP_BLOCKS_UNREWARDED[NUM_MDP_BLOCKS - i - 1] += 1
+
 # Divide the first set of stroop trials into blocks
 NUM_DISTRACTOR_TRIALS_1 *= MDP_TO_STROOP_CONVERSION
 NUM_BLOCKS_1 = Math.ceil NUM_DISTRACTOR_TRIALS_1 / MAX_STROOP_BLOCK_LENGTH
@@ -157,7 +162,6 @@ jsPsych = initJsPsych(
 
     # Saving data after each trial
     on_data_update: (data) ->
-      console.log 'data', data
       psiturk.recordTrialData data
       # Send POST request to Heroku based on success or failure of syncing data
       # Currently not sure how to read the JSON information in the received POST request in Heroku
@@ -252,8 +256,8 @@ $(window).on 'load', ->
     # Create test trials for mouselab
     getScarcityTrials = (numRewarded, numUnrewarded) ->
       shuffledTrials = _.shuffle TRIALS
-      rewardedTrials = shuffledTrials.slice(0, numRewarded)
-      unrewardedTrials = shuffledTrials.slice(numRewarded, numRewarded + numUnrewarded)
+      rewardedTrials = JSON.parse JSON.stringify shuffledTrials.slice(0, numRewarded)
+      unrewardedTrials = JSON.parse JSON.stringify shuffledTrials.slice(numRewarded, numRewarded + numUnrewarded)
       for trial, idx in rewardedTrials
         trial["withholdReward"] = false
       for trial, idx in unrewardedTrials
@@ -408,7 +412,7 @@ initializeExperiment = ->
         First you will be given the instructions and answer some questions to check your understanding of the game.
 
         <br><br>
-        If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
+        If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 45 minutes.
 
         <br><br>
 
@@ -439,7 +443,7 @@ initializeExperiment = ->
         Before each game, you will be given instructions on how to play the game. You may also have to answer some questions to check your understanding of the game.
 
         <br><br>
-        If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 40 minutes.
+        If you complete the entire experiment, you will receive a bonus payment for your performance in these games. The better you perform, the higher your bonus will be. The whole HIT will last around 45 minutes.
 
         <br><br>
         <strong>NOTE: </strong> Please complete the experiment within one sitting without closing or refreshing the page. If you do either of these, you will no longer be able to get back into the experiment to complete it.
@@ -1066,10 +1070,7 @@ initializeExperiment = ->
     minimumTime = null
 
   # Test trial block structure for all conditions
-  # Create all MDP trials
-  MDP_TRIALS = getScarcityTrials NUM_TEST_TRIALS, NUM_UNREWARDED_TRIALS
   test_timeline = []
-  pointer_idx = 0
 
   # Divide all MDP trials across blocks
   for numBlockTrials, idx in MDP_BLOCKS
@@ -1116,8 +1117,10 @@ initializeExperiment = ->
         """
 
     test_timeline.push ready_screen
-    block_trials = MDP_TRIALS.slice(pointer_idx, pointer_idx + numBlockTrials)
-    pointer_idx += numBlockTrials
+
+    # Divide the rewarded and unrewarded trials evenly over blocks
+    block_trials = getScarcityTrials (numBlockTrials - MDP_BLOCKS_UNREWARDED[idx]), MDP_BLOCKS_UNREWARDED[idx]
+
     # TODO: Update to wait_for_click true - pilot v3.1
     # Define jsPsych timeline for current block of MDP trials
     test_trials = {
