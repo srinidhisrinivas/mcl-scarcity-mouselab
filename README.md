@@ -7,6 +7,7 @@ This experiment uses the Mouselab-MDP paradigm (see link above) to investigate a
 
 Code versions:
 
+mcl_scarcity_final_v2.2 - Third round of data collection of the final version of the experiment (100 participants)
 mcl_scarcity_final_v2.1 - Second round of data collection of the final version of the experiment (60 participants)
 mcl_scarcity_final_v2.0 - First round of data collection of the final version of the experiment (40 participants)
 mcl_scarcity_final_v1.0 - Test run of unrewarded trials equally distributed over blocks

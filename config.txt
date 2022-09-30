@@ -154,7 +154,7 @@ threads = 1
 # Can be any string value -- recommended to use semantic versioning for analysis
 # sanity.
 # REG: CHANGE THIS!
-experiment_code_version = mcl_scarcity_final_v2.1
+experiment_code_version = mcl_scarcity_final_v2.2
 
 # The number of possible treatments. Used for random balanced assignment.
 # REG: CHANGE THIS!
