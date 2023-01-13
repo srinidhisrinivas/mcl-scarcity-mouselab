@@ -27,7 +27,7 @@ else
 if mode is "{{ mode }}"
   CONDITION = 0
 
-# REWARDED_PROPORTIONS = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+# List of conditions by proportions of trials that are given explicit rewards
 REWARDED_PROPORTIONS = [1, 0.25]
 REWARDED_PROP = REWARDED_PROPORTIONS[CONDITION]
 COST = REWARDED_PROP
@@ -55,9 +55,7 @@ BONUS_RATE = .002
 if DEBUG
   NUM_TEST_TRIALS = 10
 else
-  # TODO: 30 trials for full experiment
   NUM_TEST_TRIALS = 30
-  #NUM_TEST_TRIALS = 2
 
 # Number of trials in maximum scarcity condition
 NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIONS.length - 1]
@@ -65,18 +63,18 @@ NUM_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROPORTIONS[REWARDED_PROPORTIO
 # Number of trials in current condition
 NUM_MDP_TRIALS = Math.ceil NUM_TEST_TRIALS / REWARDED_PROP
 
-# Calculate number of distractor trials
+# Calculate number of distractor trials for current condition
 NUM_UNREWARDED_TRIALS = NUM_MDP_TRIALS - NUM_TEST_TRIALS
 NUM_DISTRACTOR_TRIALS = NUM_TRIALS - NUM_MDP_TRIALS
 NUM_DISTRACTOR_TRIALS_1 = Math.floor NUM_DISTRACTOR_TRIALS / 2
 NUM_DISTRACTOR_TRIALS_2 = Math.ceil NUM_DISTRACTOR_TRIALS / 2
 
-# Convert MDP trials to stroop trials
+# Convert MDP trials to stroop trials - 10 stroop trials equal to the length of 1 MDP trial
 MDP_TO_STROOP_CONVERSION = 10
+
+# Maximum block length
 MAX_MDP_BLOCK_LENGTH = 30
-# TODO: 100 trials block length for full experiment
 MAX_STROOP_BLOCK_LENGTH = 100
-#MAX_STROOP_BLOCK_LENGTH = 6
 
 if DEBUG
   MAX_STROOP_BLOCK_LENGTH = 10
@@ -89,6 +87,7 @@ REMAINDER_TRIALS = NUM_MDP_TRIALS % NUM_MDP_BLOCKS
 for i in [0...REMAINDER_TRIALS]
   MDP_BLOCKS[i] += 1
 
+# Divide unrewarded/rewarded trials evenly across blocks
 MDP_BLOCKS_UNREWARDED = new Array(NUM_MDP_BLOCKS).fill(Math.floor NUM_UNREWARDED_TRIALS / NUM_MDP_BLOCKS)
 REMAINDER_TRIALS = NUM_UNREWARDED_TRIALS % NUM_MDP_BLOCKS
 for i in [0...REMAINDER_TRIALS]
@@ -528,11 +527,9 @@ initializeExperiment = ->
       ]
     }
 
-    # TODO: Update to wait_for_click: true - pilot v3.1
   # Practice Mouselab trials for all conditions
   practice_trials = {
     type: jsPsychMouselabMDP
-# display: $('#jspsych-target')
     graph: STRUCTURE.graph
     layout: STRUCTURE.layout
     initial: STRUCTURE.initial
@@ -545,7 +542,6 @@ initializeExperiment = ->
     scoreShift: 2
     stateBorder : () -> "rgb(187,187,187,1)"#getColor
     playerImage: 'static/images/spider.png'
-# trial_id: jsPsych.timelineVariable('trial_id',true)
     blockName: 'test'
     upperMessage: "Web of Cash - Practice Round"
     lowerMessage: """
@@ -1121,11 +1117,9 @@ initializeExperiment = ->
     # Divide the rewarded and unrewarded trials evenly over blocks
     block_trials = getScarcityTrials (numBlockTrials - MDP_BLOCKS_UNREWARDED[idx]), MDP_BLOCKS_UNREWARDED[idx]
 
-    # TODO: Update to wait_for_click true - pilot v3.1
     # Define jsPsych timeline for current block of MDP trials
     test_trials = {
       type: jsPsychMouselabMDP
-# display: $('#jspsych-target')
       graph: STRUCTURE.graph
       layout: STRUCTURE.layout
       initial: STRUCTURE.initial
@@ -1138,7 +1132,6 @@ initializeExperiment = ->
       minTime: minimumTime
       stateBorder : () -> "rgb(187,187,187,1)"#getColor
       playerImage: 'static/images/spider.png'
-# trial_id: jsPsych.timelineVariable('trial_id',true)
       blockName: 'test' + (idx+1)
       lowerMessage: """
       Click on the nodes to reveal their values.<br>
