@@ -31,10 +31,13 @@ How to run:
 
 * install python virtual environment and launch
   * `python3 -m venv env & source env/bin/activate`
-* install psiturk
-  * `pip install psiturk`
+* install the necessary packages
+  * `pip install -r requirements.txt`
 * Compile the experiment files
   * `make`
+* Create a database file in the root folder for testing
+  * `sqlite3 participants.db`
+  * (sqlite3 needs to be installed if not already: https://www.tutorialspoint.com/sqlite/sqlite_installation.htm)
 * Run the experiment locally
   * `psiturk server on`
 * The experiment can be opened in a web browser at address `https://localhost:22362`
@@ -43,8 +46,8 @@ TODO: Add link to paper
 
 Code versions:
 
-`mcl_scarcity_final_v2.2` - Third round of data collection of the final version of the experiment (100 participants)
-`mcl_scarcity_final_v2.1` - Second round of data collection of the final version of the experiment (60 participants)
-`mcl_scarcity_final_v2.0` - First round of data collection of the final version of the experiment (40 participants)
-`mcl_scarcity_final_v1.0` - Test run of unrewarded trials equally distributed over blocks
-`mcl_scarcity_final_v0.0` - First test run of final version of experiment
+* `mcl_scarcity_final_v2.2` - Third round of data collection of the final version of the experiment (100 participants)
+* `mcl_scarcity_final_v2.1` - Second round of data collection of the final version of the experiment (60 participants)
+* `mcl_scarcity_final_v2.0` - First round of data collection of the final version of the experiment (40 participants)
+* `mcl_scarcity_final_v1.0` - Test run of unrewarded trials equally distributed over blocks
+* `mcl_scarcity_final_v0.0` - First test run of final version of experiment
