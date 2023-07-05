@@ -42,7 +42,7 @@ How to run:
   * `psiturk server on`
 * The experiment can be opened in a web browser at address `https://localhost:22362`
 
-TODO: Add link to paper
+Link to preprint: https://osf.io/fyx4g/
 
 Code versions:
 
