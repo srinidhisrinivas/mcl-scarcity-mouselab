@@ -1,7 +1,7 @@
 import random
 import json
 import sys
-from os import path
+from os import path, listdir
 
 filename = sys.argv[1]
 
@@ -16,6 +16,18 @@ with open(filename, 'r') as f:
 generated_hitIds = []
 generated_workerIds = []
 generated_assignmentIds = []
+
+
+# Check if there is already an ID_map and read if there is
+id_map_filename = "anonymized_id_map.json"
+id_map_file = "results/" + id_map_filename
+id_map_exists = id_map_filename in listdir('results/')
+if id_map_exists:
+    with open(id_map_file, 'r') as f:
+        filestring = f.read()
+        id_map = json.loads(filestring)
+else:
+    id_map = {'workerId': {}, 'hitId': {}, 'assignmentId': {}}
 
 def generate_random_id(prefix, existing):
     while True:
@@ -44,9 +56,17 @@ for part in file_data["values"]:
     part[5] = "<redacted>"
 
     part[0] = part[0].replace(old_worker_id, new_worker_id).replace(old_ass_id, new_ass_id)
+
+    # Save new mapping to json file
+    id_map["assignmentId"][part[1]] = new_ass_id
+    id_map["workerId"][part[2]] = new_worker_id
+    id_map["hitId"][part[3]] = new_hit_id
+
+
     part[1] = new_ass_id
     part[2] = new_worker_id
     part[3] = new_hit_id
+
 
     try:
         # replace all occurrences of IDs in datastring
@@ -61,3 +81,8 @@ with open(new_filename, 'w') as f:
     json.dump(file_data, f)
 
 print(f"Wrote to {new_filename}")
+
+with open(id_map_file, 'w') as f:
+    json.dump(id_map, f)
+
+print(f"Wrote mapping to {id_map_file}")
