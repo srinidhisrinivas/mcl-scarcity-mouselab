@@ -2,7 +2,7 @@
 
 (forked from [this repo](https://github.com/RationalityEnhancementGroup/mouselab-mdp-example/tree/jsPsych-v7.2.1) for the purposes of defining a single experiment)
 
-This experiment uses the Mouselab-MDP paradigm (see link above) to investigate a hindering factor of meta-cognitive learning, namely scarcity. 
+This experiment uses the Mouselab-MDP paradigm (see link above) to investigate a hindering factor of meta-cognitive learning, namely scarcity of feedback from the environment. 
 
 Meta-Cognitive Learning is described as the process by which humans learn how to improve their cognitive strategies. This repository contains code for the implementation of an experiment testing participants on the same planning strategy. On several of the trials, the participants do not receive explicit feedback about the outcome of their plan, i.e., feedback from the environment is scarce. It is investigated whether this effect prevents participants from learning adaptive strategies appropriately, and if so, to which extent.
 
