@@ -8,13 +8,14 @@ How to run:
 * Install the `mouselab` package
   * `pip install -e .`
 * Install other necessary packages for notebooks
-  * `pip install csv pickle pandas numpy matplotlib jupyter statsmodels scipy scikit-learn pymongo`
+  * `pip install -r requirements.txt`
 * Open jupyter notebook
   * `jupyter notebook`
-* Open any one of the following notebooks
-  * Preprocessing - Preprocessing of raw PostGRES data, analysis of demographic data, and calculation of Prolific bonuses
-  * Data Analysis - Statistical analyses of participant data
-  * Model Analysis - Analyses of fitted models
+* The following notebooks are relevant
+  * `Data Analysis.ipynb` - Statistical analyses of participant data
+  * `Model Analysis.ipynb` - 
+    * Creation of BIC dataframes for model comparison using spm12
+    * Analyses of model comparison results from spm12
 * Run the cells of the notebook in order
 
-Participant data should be present in the `results` folder of the root directory. Contact the experimenter for access to the dataset in the appropriate format.
+Participant data should be present in the `results/anonymized_data` folder of the root directory. 
