@@ -44,6 +44,8 @@ How to run:
 
 Link to preprint: https://osf.io/fyx4g/
 
+Link to OSF repository: https://osf.io/n6x5k/
+
 Code versions:
 
 * `mcl_scarcity_final_v2.2` - Third round of data collection of the final version of the experiment (100 participants)
