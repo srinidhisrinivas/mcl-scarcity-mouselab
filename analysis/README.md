@@ -1,5 +1,7 @@
 This directory contains analysis notebooks for the preprocessing and analysis of participant data.
 
+Some of the notebooks use outputs of model-fitting procedures whose scripts are present in the [mcl_toolbox](https://github.com/srinidhisrinivas/mcl_toolbox) repository.
+
 How to run:
 * create python virtual environment
   * `python3 -m venv env`
